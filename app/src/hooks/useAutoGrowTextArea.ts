@@ -20,5 +20,8 @@ const updateHeight = (elementRef: Ref) => {
 export const useAutoGrowTextArea = () => {
   const containerRef = useRef<HTMLDivElement>() as Ref;
 
-  return { containerRef, updateTextAreaHeight: () => updateHeight(containerRef) };
+  return {
+    containerRef,
+    updateTextAreaHeight: () => updateHeight(containerRef),
+  };
 };

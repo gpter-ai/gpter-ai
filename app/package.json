@@ -18,7 +18,10 @@
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "lint": "eslint src --fix"
+    "lint:fix": "eslint src --fix",
+    "lint": "eslint src",
+    "style": "prettier -c ./src",
+    "style:fix": "prettier -cw ./src"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.248",
@@ -39,7 +42,9 @@
     "@vitejs/plugin-react": "^3.1.0",
     "electron": "^23.2.0",
     "eslint": "^8.38.0",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-config-react-app": "^7.0.1",
+    "prettier": "^2.8.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sass": "^1.60.0",
