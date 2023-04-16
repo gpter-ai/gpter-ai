@@ -1,16 +1,23 @@
 import React, { ReactNode, useContext } from 'react';
 import { DataProvider } from '@/data';
-import { assertIsDefined } from '@/utils/asserts';
+import { assertNonNullable } from '@/utils/asserts';
 
-const DataProviderContext = React.createContext<DataProvider | undefined>(undefined);
+const DataProviderContext = React.createContext<DataProvider | undefined>(
+  undefined,
+);
 
-export const withDataProvider = (component: ReactNode, dataProvider: DataProvider) =>
+export const withDataProvider = (
+  component: ReactNode,
+  dataProvider: DataProvider,
+) => (
   <DataProviderContext.Provider value={dataProvider}>
     {component}
-  </DataProviderContext.Provider>;
+  </DataProviderContext.Provider>
+);
 
 export const useDataProvider = (): DataProvider => {
   const dataProvider = useContext(DataProviderContext);
 
-  return assertIsDefined(dataProvider);
+  assertNonNullable(dataProvider);
+  return dataProvider;
 };

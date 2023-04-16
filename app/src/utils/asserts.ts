@@ -1,7 +1,7 @@
 import { Nullable } from '@/types';
 
-export const assertIsDefined = <T>(value: Nullable<T>): T => {
+export function assertNonNullable<T>(
+  value: Nullable<T>,
+): asserts value is NonNullable<T> {
   if (value == null) throw new Error(`Value is not defined: ${value}`);
-
-  return value;
-};
+}
