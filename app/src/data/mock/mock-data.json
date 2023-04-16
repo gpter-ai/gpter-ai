@@ -1,0 +1,25 @@
+{
+  "assistants": [
+    {
+      "id": "6137a621-f3dc-410d-bb7f-6f8fa14fea27",
+      "name": "General Assistant",
+      "prompt": ""
+    }
+  ],
+  "queries": [
+    {
+      "id": "38dd84fd-1be0-44f0-aaa7-53a75feaf381",
+      "assistantId": "6137a621-f3dc-410d-bb7f-6f8fa14fea27",
+      "timestamp": "1671635391",
+      "content": "What is the difference between a duck?",
+      "response": "Error"
+    },
+    {
+      "id": "38dd84fd-1321-44f0-ssas-53a72s4gf381",
+      "assistantId": "6137a621-f3dc-410d-bb7f-6f8fa14fea27",
+      "timestamp": "1671638271",
+      "content": "What salary should I ask for?",
+      "response": "Ask for a gorstochka of krupa"
+    }
+  ]
+}

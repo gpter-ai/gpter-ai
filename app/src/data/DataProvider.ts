@@ -1,3 +1,7 @@
-export class DataProvider {
-  // TODO accept StorageProvider as constructor parameter
+import { Assistant, Query } from './types';
+
+export interface DataProvider {
+  // @TODO - a single get() operation that infers return value from the first arg which is the collection name
+  getAssistants(): Assistant[];
+  getQueriesByAssistant(assistantId: string): Query[];
 }

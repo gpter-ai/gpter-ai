@@ -12,10 +12,23 @@ import {
 } from '@cloudscape-design/components';
 import { InputProps } from '@cloudscape-design/components/input/interfaces';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
+import { useDataProvider } from '@/hooks/useDataProvider';
 
 export function Content() {
   const [text, setText] = useState('');
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
+
+  const dataProvider = useDataProvider();
+
+  const queries = dataProvider.getQueriesByAssistant(
+    '6137a621-f3dc-410d-bb7f-6f8fa14fea27',
+  );
+
+  const historyText = queries
+    .map(
+      (query) => `Question: ${query.content} ~~~ Response: ${query.response}`,
+    )
+    .join('\n');
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
@@ -40,6 +53,9 @@ export function Content() {
         }
       >
         <div ref={containerRef}>
+          <SpaceBetween size="m" direction="vertical">
+            <Textarea value={historyText} rows={10} disabled />
+          </SpaceBetween>
           <SpaceBetween size="m" direction="vertical">
             <Textarea
               value={text}
