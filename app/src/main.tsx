@@ -1,13 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@cloudscape-design/global-styles/index.css';
+import { CssBaseline } from '@mui/material';
 import { WithProviders } from '@/components';
+import { Content } from '@/components/Content';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <WithProviders>
-      <App />
+      <CssBaseline />
+      <Content />
     </WithProviders>
   </React.StrictMode>,
 );
