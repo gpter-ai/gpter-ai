@@ -9,9 +9,11 @@ type Props = {
   visible: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  text: string;
+  header: string;
 };
 
-const DismissModal = ({ visible, onConfirm, onCancel }: Props) => {
+const DangerModal = ({ visible, onConfirm, onCancel, text, header }: Props) => {
   return (
     <Modal
       visible={visible}
@@ -24,16 +26,16 @@ const DismissModal = ({ visible, onConfirm, onCancel }: Props) => {
               Cancel
             </Button>
             <Button onClick={onConfirm} variant="primary">
-              Ok
+              Confirm
             </Button>
           </SpaceBetween>
         </Box>
       }
-      header="Attention!"
+      header={header}
     >
-      You are about to close the creator! All unsaved changes will be lost!
+      {text}
     </Modal>
   );
 };
 
-export default DismissModal;
+export default DangerModal;

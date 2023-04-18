@@ -5,7 +5,8 @@ import AssistantModal, {
 import { Nullable } from '@/types';
 import { AssistantFormFields } from '@/data/types';
 
-type OpenModalProps = Pick<AssistantModalProps, 'onSubmit'>;
+type OpenModalProps = Pick<AssistantModalProps, 'onSubmit'> &
+  Partial<Pick<AssistantModalProps, 'initData'>>;
 
 type AssistantModalContextValue = {
   openModal: (props: OpenModalProps) => void;
@@ -19,13 +20,22 @@ const AssistantModalContext =
   createContext<Nullable<AssistantModalContextValue>>(null);
 
 const AssistantModalProvider = ({ children }: AssistantModalProviderProps) => {
+  const emptyFormData = {
+    name: '',
+    prompt: '',
+  };
+
   const [visible, setVisible] = useState<boolean>(false);
+  const [initModalData, setInitModalData] =
+    useState<AssistantFormFields>(emptyFormData);
   const [onModalSubmit, setOnModalSubmit] = useState<
     AssistantModalProps['onSubmit']
   >(() => {});
 
-  const openModal = ({ onSubmit }: OpenModalProps) => {
+  const openModal = ({ onSubmit, initData }: OpenModalProps) => {
     setOnModalSubmit(() => (props: AssistantFormFields) => onSubmit(props));
+    setInitModalData(initData ?? emptyFormData);
+
     setVisible(true);
   };
 
@@ -45,6 +55,7 @@ const AssistantModalProvider = ({ children }: AssistantModalProviderProps) => {
         visible={visible}
         setVisible={setVisible}
         onSubmit={onModalSubmit}
+        initData={initModalData}
       />
     </>
   );

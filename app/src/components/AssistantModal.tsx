@@ -7,18 +7,19 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import { useState } from 'react';
-import DismissModal from './DismissModal';
+import { useEffect, useState } from 'react';
+import DangerModal from './DangerModal';
 import { AssistantFormFields } from '@/data/types';
 
 export type Props = {
   visible: boolean;
   setVisible: (value: boolean) => void;
   onSubmit: (fields: AssistantFormFields) => void;
+  initData: AssistantFormFields;
 };
 
 // @TODO - convert to AssistantModal allowing also edit
-const AssistantModal = ({ visible, setVisible, onSubmit }: Props) => {
+const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
   const [name, setName] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
 
@@ -27,7 +28,12 @@ const AssistantModal = ({ visible, setVisible, onSubmit }: Props) => {
 
   const [dismissModalOpen, setDismissModalOpen] = useState<boolean>(false);
 
-  const isDirty = () => name !== '' || prompt !== '';
+  useEffect(() => {
+    setName(initData.name);
+    setPrompt(initData.prompt);
+  }, [initData]);
+
+  const isDirty = () => name !== initData.name || prompt !== initData.prompt;
 
   const nameValid = () => name.trim() !== '';
   const promptValid = () => prompt.trim() !== '';
@@ -113,13 +119,15 @@ const AssistantModal = ({ visible, setVisible, onSubmit }: Props) => {
           />
         </FormField>
       </SpaceBetween>
-      <DismissModal
+      <DangerModal
         visible={dismissModalOpen}
         onCancel={() => setDismissModalOpen(false)}
         onConfirm={() => {
           setDismissModalOpen(false);
           dismiss();
         }}
+        text="You are about to close the creator! All unsaved changes will be lost!"
+        header="Attention!"
       />
     </Modal>
   );

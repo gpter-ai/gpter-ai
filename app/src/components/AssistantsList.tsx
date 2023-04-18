@@ -12,13 +12,12 @@ type Props = {
 const AssistantsList = ({ setSelectedAssistant }: Props) => {
   const dataProvider = useDataProvider();
   const assistants = dataProvider.getAssistants();
+  const assistantModal = useAssistantModal();
 
   const onAssistantModalSubmit = (props: AssistantFormFields) => {
     // @TODO implement respective data provider method
     console.log('yay!', props);
   };
-
-  const assistantModal = useAssistantModal();
 
   const onNewAssistantClick = () =>
     assistantModal!.openModal({ onSubmit: onAssistantModalSubmit });

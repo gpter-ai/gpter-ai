@@ -11,7 +11,9 @@ import {
 import { useState } from 'react';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useDataProvider } from '@/hooks/useDataProvider';
-import { Assistant } from '@/data/types';
+import { Assistant, AssistantFormFields } from '@/data/types';
+import { useAssistantModal } from '@/context/AssistantModal';
+import DangerModal from './DangerModal';
 
 type Props = {
   assistant: Assistant;
@@ -19,6 +21,7 @@ type Props = {
 
 const Chat = ({ assistant }: Props) => {
   const [text, setText] = useState('');
+  const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
   const dataProvider = useDataProvider();
@@ -37,10 +40,36 @@ const Chat = ({ assistant }: Props) => {
     updateTextAreaHeight();
   };
 
+  const assistantModal = useAssistantModal();
+
+  const onAssistantModalSubmit = (props: AssistantFormFields) => {
+    // @TODO implement respective data provider method
+    console.log('EDITED!', props);
+  };
+
+  const onEditAssistantClick = () =>
+    assistantModal!.openModal({
+      onSubmit: onAssistantModalSubmit,
+      initData: { name: assistant.name, prompt: assistant.prompt },
+    });
+
+  const onDeleteAssistantClick = () => {
+    setRemovalModalVisible(true);
+  };
+
+  const removeAssistant = () => {
+    console.log(`Removing ${assistant.name}`);
+    setRemovalModalVisible(false);
+  };
+
   const headerActions = (
     <SpaceBetween direction="horizontal" size="xs">
-      <Button iconName="edit">Edit</Button>
-      <Button iconName="remove">Delete</Button>
+      <Button iconName="edit" onClick={onEditAssistantClick}>
+        Edit
+      </Button>
+      <Button iconName="remove" onClick={onDeleteAssistantClick}>
+        Delete
+      </Button>
     </SpaceBetween>
   );
 
@@ -65,6 +94,13 @@ const Chat = ({ assistant }: Props) => {
           </Box>
         </SpaceBetween>
       </div>
+      <DangerModal
+        visible={removalModalVisible}
+        text={`You are about to remove ${assistant.name}. Are you sure?`}
+        header={`Removing ${assistant.name}`}
+        onCancel={() => setRemovalModalVisible(false)}
+        onConfirm={removeAssistant}
+      />
     </Container>
   );
 };

@@ -6,7 +6,7 @@ export type Assistant = {
   last_update?: Date;
 };
 
-export type AssistantCreation = Pick<Assistant, 'name' | 'prompt'>;
+export type AssistantFormFields = Pick<Assistant, 'name' | 'prompt'>;
 
 export type Query = {
   id: string;
