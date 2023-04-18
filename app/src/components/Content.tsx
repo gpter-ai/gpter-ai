@@ -1,17 +1,22 @@
 import * as React from 'react';
 import { useState } from 'react';
+import ContentLayout from '@cloudscape-design/components/content-layout';
+import Container from '@cloudscape-design/components/container';
+import Header from '@cloudscape-design/components/header';
+import SpaceBetween from '@cloudscape-design/components/space-between';
+import Textarea from '@cloudscape-design/components/textarea';
 import {
-  AppBar,
   Box,
-  Grid,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
+  Button,
+  NonCancelableCustomEvent,
+} from '@cloudscape-design/components';
+import { InputProps } from '@cloudscape-design/components/input/interfaces';
+import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useDataProvider } from '@/hooks/useDataProvider';
 
 export function Content() {
   const [text, setText] = useState('');
+  const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
   const dataProvider = useDataProvider();
 
@@ -25,50 +30,45 @@ export function Content() {
     )
     .join('\n');
 
-  const onValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setText(event.target.value);
+  const onValueChange = (
+    e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
+  ) => {
+    setText(e.detail.value);
+    updateTextAreaHeight();
   };
 
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Box sx={{ flexGrow: 1 }}>
-          <AppBar position="static">
-            <Toolbar variant="dense">
-              <Typography variant="h6" color="inherit" component="div">
-                GPTer
-              </Typography>
-            </Toolbar>
-          </AppBar>
-        </Box>
-      </Grid>
-      <Grid
-        item
-        xs={12}
-        sx={{ display: 'flex', justifyContent: 'space-around' }}
+    <ContentLayout
+      header={
+        <SpaceBetween size="m">
+          <Header variant="h1">GTPer</Header>
+        </SpaceBetween>
+      }
+    >
+      <Container
+        header={
+          <Header variant="h2" description="Please input your text">
+            Generic assistant
+          </Header>
+        }
       >
-        <TextField
-          sx={{ width: '80%' }}
-          label="History"
-          multiline
-          rows={10}
-          disabled
-          defaultValue={historyText}
-        />
-      </Grid>
-      <Grid
-        item
-        xs={12}
-        sx={{ display: 'flex', justifyContent: 'space-around' }}
-      >
-        <TextField
-          sx={{ width: '80%' }}
-          onChange={onValueChange}
-          label="Your text"
-          variant="outlined"
-          value={text}
-        />
-      </Grid>
-    </Grid>
+        <div ref={containerRef}>
+          <SpaceBetween size="m" direction="vertical">
+            <Textarea value={historyText} rows={10} disabled />
+          </SpaceBetween>
+          <SpaceBetween size="m" direction="vertical">
+            <Textarea
+              value={text}
+              onChange={onValueChange}
+              rows={1}
+              autoFocus
+            />
+            <Box textAlign="right">
+              <Button variant="primary">Submit</Button>
+            </Box>
+          </SpaceBetween>
+        </div>
+      </Container>
+    </ContentLayout>
   );
 }
