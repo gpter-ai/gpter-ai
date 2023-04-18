@@ -1,8 +1,8 @@
 import { AppLayout } from '@cloudscape-design/components';
-import { Content } from '@/components/Content';
+import Content from '@/components/Content';
 
-function App() {
+const App = () => {
   return <AppLayout navigationHide toolsHide content={<Content />} />;
-}
+};
 
 export default App;

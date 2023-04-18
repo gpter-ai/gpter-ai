@@ -1,74 +1,31 @@
 import * as React from 'react';
-import { useState } from 'react';
 import ContentLayout from '@cloudscape-design/components/content-layout';
-import Container from '@cloudscape-design/components/container';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
-import Textarea from '@cloudscape-design/components/textarea';
-import {
-  Box,
-  Button,
-  NonCancelableCustomEvent,
-} from '@cloudscape-design/components';
-import { InputProps } from '@cloudscape-design/components/input/interfaces';
-import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
-import { useDataProvider } from '@/hooks/useDataProvider';
+import { Grid, GridProps } from '@cloudscape-design/components';
+import AssistantsList from './AssistantsList';
+import Chat from './Chat';
 
-export function Content() {
-  const [text, setText] = useState('');
-  const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
-
-  const dataProvider = useDataProvider();
-
-  const queries = dataProvider.getQueriesByAssistant(
-    '6137a621-f3dc-410d-bb7f-6f8fa14fea27',
-  );
-
-  const historyText = queries
-    .map(
-      (query) => `Question: ${query.content} ~~~ Response: ${query.response}`,
-    )
-    .join('\n');
-
-  const onValueChange = (
-    e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
-  ) => {
-    setText(e.detail.value);
-    updateTextAreaHeight();
-  };
+const Content = () => {
+  const gridDefinition: ReadonlyArray<GridProps.ElementDefinition> = [
+    { colspan: { default: 4, s: 3 } },
+    { colspan: { default: 8, s: 9 } },
+  ];
 
   return (
     <ContentLayout
       header={
         <SpaceBetween size="m">
-          <Header variant="h1">GTPer</Header>
+          <Header variant="h1">GPTer</Header>
         </SpaceBetween>
       }
     >
-      <Container
-        header={
-          <Header variant="h2" description="Please input your text">
-            Generic assistant
-          </Header>
-        }
-      >
-        <div ref={containerRef}>
-          <SpaceBetween size="m" direction="vertical">
-            <Textarea value={historyText} rows={10} disabled />
-          </SpaceBetween>
-          <SpaceBetween size="m" direction="vertical">
-            <Textarea
-              value={text}
-              onChange={onValueChange}
-              rows={1}
-              autoFocus
-            />
-            <Box textAlign="right">
-              <Button variant="primary">Submit</Button>
-            </Box>
-          </SpaceBetween>
-        </div>
-      </Container>
+      <Grid gridDefinition={gridDefinition}>
+        <AssistantsList />
+        <Chat />
+      </Grid>
     </ContentLayout>
   );
-}
+};
+
+export default Content;

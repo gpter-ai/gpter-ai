@@ -1,2 +1,2 @@
 export * from './WithProviders';
-export * from './Content';
+export * as Content from './Content';

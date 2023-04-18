@@ -4,6 +4,21 @@
       "id": "6137a621-f3dc-410d-bb7f-6f8fa14fea27",
       "name": "General Assistant",
       "prompt": ""
+    },
+    {
+      "id": "8e7c1a42-9617-48fa-9afd-e594333d4f27",
+      "name": "German Translator",
+      "prompt": ""
+    },
+    {
+      "id": "78cf85b4-ccd5-4e22-a781-af77fb405e89",
+      "name": "Assistant with a very long name",
+      "prompt": ""
+    },
+    {
+      "id": "1038a57f-9880-4fa3-8e3f-707860c2e58f",
+      "name": "short",
+      "prompt": ""
     }
   ],
   "queries": [
