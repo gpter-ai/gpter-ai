@@ -7,6 +7,7 @@ import AssistantsList from './AssistantsList';
 import Chat from './Chat';
 import { Assistant } from '@/data/types';
 import { useDataProvider } from '@/hooks/useDataProvider';
+import AssistantModalProvider from '@/context/AssistantModal';
 
 const Content = () => {
   const dataProvider = useDataProvider();
@@ -28,10 +29,12 @@ const Content = () => {
         </SpaceBetween>
       }
     >
-      <Grid gridDefinition={gridDefinition}>
-        <AssistantsList setSelectedAssistant={setSelectedAssistant} />
-        <Chat assistant={selectedAssistant} />
-      </Grid>
+      <AssistantModalProvider>
+        <Grid gridDefinition={gridDefinition}>
+          <AssistantsList setSelectedAssistant={setSelectedAssistant} />
+          <Chat assistant={selectedAssistant} />
+        </Grid>
+      </AssistantModalProvider>
     </ContentLayout>
   );
 };

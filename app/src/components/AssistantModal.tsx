@@ -9,16 +9,16 @@ import {
 } from '@cloudscape-design/components';
 import { useState } from 'react';
 import DismissModal from './DismissModal';
-import { AssistantCreation } from '@/data/types';
+import { AssistantFormFields } from '@/data/types';
 
-type Props = {
+export type Props = {
   visible: boolean;
   setVisible: (value: boolean) => void;
-  onCreate: (fields: AssistantCreation) => void;
+  onSubmit: (fields: AssistantFormFields) => void;
 };
 
 // @TODO - convert to AssistantModal allowing also edit
-const CreateAssistantModal = ({ visible, setVisible, onCreate }: Props) => {
+const AssistantModal = ({ visible, setVisible, onSubmit }: Props) => {
   const [name, setName] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
 
@@ -56,12 +56,14 @@ const CreateAssistantModal = ({ visible, setVisible, onCreate }: Props) => {
   const dismiss = () => {
     setName('');
     setPrompt('');
+    setNameError('');
+    setPromptError('');
     setVisible(false);
   };
 
   const create = () => {
     if (isValid()) {
-      onCreate({ name, prompt });
+      onSubmit({ name, prompt });
       dismiss();
     } else {
       setErrorMessages();
@@ -123,4 +125,4 @@ const CreateAssistantModal = ({ visible, setVisible, onCreate }: Props) => {
   );
 };
 
-export default CreateAssistantModal;
+export default AssistantModal;
