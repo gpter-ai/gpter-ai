@@ -37,10 +37,21 @@ const Chat = ({ assistant }: Props) => {
     updateTextAreaHeight();
   };
 
+  const headerActions = (
+    <SpaceBetween direction="horizontal" size="xs">
+      <Button iconName="edit">Edit</Button>
+      <Button iconName="remove">Delete</Button>
+    </SpaceBetween>
+  );
+
   return (
     <Container
       header={
-        <Header variant="h2" description="Please input your text">
+        <Header
+          actions={headerActions}
+          variant="h2"
+          description="Please input your text"
+        >
           {assistant.name}
         </Header>
       }

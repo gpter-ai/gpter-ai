@@ -26,17 +26,15 @@ const AssistantsList = ({ setSelectedAssistant }: Props) => {
       <Container>
         <SpaceBetween direction="vertical" size="m">
           {assistants.map((assistant) => (
-            <Box key={assistant.id} textAlign="center">
+            <Box key={assistant.id}>
               <Button onClick={() => setSelectedAssistant(assistant)}>
                 {assistant.name}
               </Button>
             </Box>
           ))}
-          <Box textAlign="center">
-            <Button iconName="add-plus" onClick={() => setModalVisible(true)}>
-              Create New Assistant
-            </Button>
-          </Box>
+          <Button iconName="add-plus" onClick={() => setModalVisible(true)}>
+            Create New Assistant
+          </Button>
         </SpaceBetween>
       </Container>
       <CreateAssistantModal
