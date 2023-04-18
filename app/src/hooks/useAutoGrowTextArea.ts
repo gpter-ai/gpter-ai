@@ -13,6 +13,7 @@ const updateHeight = (elementRef: Ref) => {
   if (textArea == null) return;
   const bestHeight = textArea.scrollHeight + 4;
 
+  // @TODO - isn't it a mistake?
   textArea.style.height = 'auto';
   textArea.style.height = `${bestHeight}px`;
 };

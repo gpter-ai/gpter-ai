@@ -8,6 +8,10 @@ export class MockstorageProvider implements StorageProvider {
     return data.assistants;
   }
 
+  getDefaultAssistant() {
+    return data.assistants[0];
+  }
+
   getQueriesByAssistant(assistantId: string) {
     return data.queries.filter((query) => query.assistantId === assistantId);
   }

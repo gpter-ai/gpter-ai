@@ -11,16 +11,18 @@ import {
 import { useState } from 'react';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useDataProvider } from '@/hooks/useDataProvider';
+import { Assistant } from '@/data/types';
 
-const Chat = () => {
+type Props = {
+  assistant: Assistant;
+};
+
+const Chat = ({ assistant }: Props) => {
   const [text, setText] = useState('');
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
   const dataProvider = useDataProvider();
-
-  const queries = dataProvider.getQueriesByAssistant(
-    '6137a621-f3dc-410d-bb7f-6f8fa14fea27',
-  );
+  const queries = dataProvider.getQueriesByAssistant(assistant.id);
 
   const historyText = queries
     .map(
@@ -39,7 +41,7 @@ const Chat = () => {
     <Container
       header={
         <Header variant="h2" description="Please input your text">
-          Generic assistant
+          {assistant.name}
         </Header>
       }
     >
