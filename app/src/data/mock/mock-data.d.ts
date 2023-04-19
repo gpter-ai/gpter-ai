@@ -1,7 +1,7 @@
-import { Assistant, Query } from '../types';
+import { Assistant, Message } from '../types';
 
 declare module 'mock-data' {
   const assistants: Assistant[];
-  const queries: Query[];
-  export = { assistants, queries };
+  const messages: Message[];
+  export = { assistants, messages };
 }

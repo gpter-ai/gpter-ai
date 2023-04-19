@@ -1,7 +1,7 @@
-import { Assistant, Query } from './types';
+import { Assistant, Message } from './types';
 
 export interface StorageProvider {
   getAssistants(): Assistant[];
   getDefaultAssistant(): Assistant;
-  getQueriesByAssistant(assistantId: string): Query[];
+  getMessagesByAssistant(assistantId: string): Message[];
 }

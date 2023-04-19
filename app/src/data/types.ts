@@ -8,10 +8,11 @@ export type Assistant = {
 
 export type AssistantFormFields = Pick<Assistant, 'name' | 'prompt'>;
 
-export type Query = {
+export type Message = {
   id: string;
   assistantId: string;
   timestamp: string;
-  content: string;
-  response: string;
+  role: 'user' | 'assistant' | 'system';
+  chunks: string[];
+  tokens?: number;
 };

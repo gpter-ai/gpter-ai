@@ -25,12 +25,10 @@ const Chat = ({ assistant }: Props) => {
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
   const dataProvider = useDataProvider();
-  const queries = dataProvider.getQueriesByAssistant(assistant.id);
+  const messages = dataProvider.getMessagesByAssistant(assistant.id);
 
-  const historyText = queries
-    .map(
-      (query) => `Question: ${query.content} ~~~ Response: ${query.response}`,
-    )
+  const historyText = messages
+    .map((message) => `${message.chunks.join('')}`)
     .join('\n');
 
   const onValueChange = (

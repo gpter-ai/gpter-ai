@@ -1,4 +1,5 @@
 import { StorageProvider } from '../StorageProvider';
+import { Message } from '../types';
 
 import data from './mock-data.json';
 
@@ -12,7 +13,9 @@ export class MockstorageProvider implements StorageProvider {
     return data.assistants[0];
   }
 
-  getQueriesByAssistant(assistantId: string) {
-    return data.queries.filter((query) => query.assistantId === assistantId);
+  getMessagesByAssistant(assistantId: string) {
+    return data.messages.filter(
+      (message) => message.assistantId === assistantId,
+    ) as Message[];
   }
 }

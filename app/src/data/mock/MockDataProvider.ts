@@ -16,7 +16,7 @@ export class MockDataProvider implements DataProvider {
     return this.#storageProvider.getDefaultAssistant();
   }
 
-  getQueriesByAssistant(assistantId: string) {
-    return this.#storageProvider.getQueriesByAssistant(assistantId);
+  getMessagesByAssistant(assistantId: string) {
+    return this.#storageProvider.getMessagesByAssistant(assistantId);
   }
 }
