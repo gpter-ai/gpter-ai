@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
 import { Box, Container } from '@cloudscape-design/components';
@@ -10,13 +11,17 @@ type Props = {
 };
 
 const AssistantsList = ({ setSelectedAssistant }: Props) => {
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
+
+  useEffect(() => {
+    dataProvider.getAssistants().then(setAssistants);
+  }, []);
+
   const dataProvider = useDataProvider();
-  const assistants = dataProvider.getAssistants();
   const assistantModal = useAssistantModal();
 
   const onAssistantModalSubmit = (props: AssistantFormFields) => {
-    // @TODO implement respective data provider method
-    console.log('yay!', props);
+    dataProvider.createAssistant(props);
   };
 
   const onNewAssistantClick = () =>

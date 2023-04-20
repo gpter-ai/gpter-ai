@@ -1,8 +1,11 @@
-import { Assistant, Message } from './types';
+import { Nullable } from '@/types';
+import { Assistant, AssistantFormFields, Message } from './types';
 
 export interface DataProvider {
-  // @TODO - a single get() operation that infers return value from the first arg which is the collection name
-  getAssistants(): Assistant[];
-  getDefaultAssistant(): Assistant;
-  getMessagesByAssistant(assistantId: string): Message[];
+  getAssistants(): Promise<Assistant[]>;
+  createAssistant(data: AssistantFormFields): void;
+  updateAssistant(key: string, data: AssistantFormFields): void;
+  deleteAssistant(key: string): void;
+  getDefaultAssistant(): Promise<Nullable<Assistant>>;
+  getMessagesByAssistant(assistantId: string): Promise<Message[]>;
 }

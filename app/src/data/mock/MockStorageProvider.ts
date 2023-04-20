@@ -3,19 +3,26 @@ import { Message } from '../types';
 
 import data from './mock-data.json';
 
-// @TODO - should these calls be async?
 export class MockstorageProvider implements StorageProvider {
   getAssistants() {
-    return data.assistants;
+    return Promise.resolve(data.assistants);
   }
 
+  createAssistant(): void {}
+
+  updateAssistant(): void {}
+
+  deleteAssistant(): void {}
+
   getDefaultAssistant() {
-    return data.assistants[0];
+    return Promise.resolve(data.assistants[0]);
   }
 
   getMessagesByAssistant(assistantId: string) {
-    return data.messages.filter(
+    const messages = data.messages.filter(
       (message) => message.assistantId === assistantId,
-    ) as Message[];
+    );
+
+    return Promise.resolve(messages) as Promise<Message[]>;
   }
 }

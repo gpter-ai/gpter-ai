@@ -1,9 +1,9 @@
 import React, { PropsWithChildren } from 'react';
 import { withDataProvider } from '@/hooks/useDataProvider';
 import { MockDataProvider } from '@/data/mock/MockDataProvider';
-import { MockstorageProvider } from '@/data/mock/MockStorageProvider';
+import { IndexedStorageProvider } from '@/data/indexedDB/IndexedStorageProvider';
 
-const storageProvider = new MockstorageProvider();
+const storageProvider = new IndexedStorageProvider();
 const dataProvider = new MockDataProvider(storageProvider);
 
 export const WithProviders: React.FC<PropsWithChildren> = ({ children }) =>

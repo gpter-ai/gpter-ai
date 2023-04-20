@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import DangerModal from './DangerModal';
 import { AssistantFormFields } from '@/data/types';
 
+// @TODO - add mode. e.g. change submit button value based on it
 export type Props = {
   visible: boolean;
   setVisible: (value: boolean) => void;
@@ -18,7 +19,6 @@ export type Props = {
   initData: AssistantFormFields;
 };
 
-// @TODO - convert to AssistantModal allowing also edit
 const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
   const [name, setName] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
