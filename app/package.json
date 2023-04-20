@@ -21,7 +21,10 @@
     "lint:fix": "eslint src --fix",
     "lint": "eslint src",
     "style": "prettier -c ./src",
-    "style:fix": "prettier -cw ./src"
+    "style:fix": "prettier -cw ./src",
+    "style:check": "npm run style && npm run lint",
+    "pretest": "npm run style:check",
+    "prepare": "cd .. && husky install"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.248",
@@ -29,7 +32,8 @@
     "dexie": "^3.2.3",
     "dexie-react-hooks": "^1.1.3",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-airbnb-typescript": "^17.0.0"
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "husky": "^8.0.3"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.1.1",
