@@ -1,8 +1,15 @@
-import { ReactNode, createContext, useContext, useMemo, useState } from 'react';
+import {
+  FC,
+  ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 import AssistantModal, {
   Props as AssistantModalProps,
 } from '@/components/AssistantModal';
-import { Nullable } from '@/types';
 import { AssistantFormFields } from '@/data/types';
 
 type OpenModalProps = Pick<AssistantModalProps, 'onSubmit'> &
@@ -16,14 +23,20 @@ type AssistantModalProviderProps = {
   children: ReactNode;
 };
 
-const AssistantModalContext =
-  createContext<Nullable<AssistantModalContextValue>>(null);
+const AssistantModalContext = createContext<AssistantModalContextValue>(
+  {} as AssistantModalContextValue,
+);
 
-const AssistantModalProvider = ({ children }: AssistantModalProviderProps) => {
-  const emptyFormData = {
-    name: '',
-    prompt: '',
-  };
+const AssistantModalProvider: FC<AssistantModalProviderProps> = ({
+  children,
+}) => {
+  const emptyFormData = useMemo(
+    () => ({
+      name: '',
+      prompt: '',
+    }),
+    [],
+  );
 
   const [visible, setVisible] = useState<boolean>(false);
   const [initModalData, setInitModalData] =
@@ -32,18 +45,21 @@ const AssistantModalProvider = ({ children }: AssistantModalProviderProps) => {
     AssistantModalProps['onSubmit']
   >(() => {});
 
-  const openModal = ({ onSubmit, initData }: OpenModalProps) => {
-    setOnModalSubmit(() => (props: AssistantFormFields) => onSubmit(props));
-    setInitModalData(initData ?? emptyFormData);
+  const openModal = useCallback(
+    ({ onSubmit, initData }: OpenModalProps): void => {
+      setOnModalSubmit(() => (props: AssistantFormFields) => onSubmit(props));
+      setInitModalData(initData ?? emptyFormData);
 
-    setVisible(true);
-  };
+      setVisible(true);
+    },
+    [emptyFormData],
+  );
 
   const value = useMemo(
     () => ({
       openModal,
     }),
-    [],
+    [openModal],
   );
 
   return (
@@ -61,6 +77,7 @@ const AssistantModalProvider = ({ children }: AssistantModalProviderProps) => {
   );
 };
 
-export const useAssistantModal = () => useContext(AssistantModalContext);
+export const useAssistantModal = (): AssistantModalContextValue =>
+  useContext(AssistantModalContext);
 
 export default AssistantModalProvider;

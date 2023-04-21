@@ -7,4 +7,4 @@ const storageProvider = new IndexedStorageProvider();
 const dataProvider = new MockDataProvider(storageProvider);
 
 export const WithProviders: React.FC<PropsWithChildren> = ({ children }) =>
-  withDataProvider(children, dataProvider);
+  withDataProvider({ component: children, dataProvider });

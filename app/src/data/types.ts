@@ -1,14 +1,12 @@
 export type Assistant = {
-  id?: string;
+  id: string;
   name: string;
   prompt: string;
   creation_date?: Date;
   last_update?: Date;
 };
 
-export type AssistantFormFields = Pick<Assistant, 'name' | 'prompt'> & {
-  id?: string;
-};
+export type AssistantFormFields = Pick<Assistant, 'name' | 'prompt'>;
 
 export type Message = {
   id: string;

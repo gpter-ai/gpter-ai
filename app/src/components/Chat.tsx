@@ -8,7 +8,7 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useDataProvider } from '@/hooks/useDataProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
@@ -20,7 +20,7 @@ type Props = {
   chooseSelectedAssistant: () => void;
 };
 
-const Chat = ({ assistant, chooseSelectedAssistant }: Props) => {
+const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const [text, setText] = useState('');
 
   // @TODO - replace with an array of message objects later
@@ -33,39 +33,39 @@ const Chat = ({ assistant, chooseSelectedAssistant }: Props) => {
 
   useEffect(() => {
     dataProvider
-      .getMessagesByAssistant(assistant.id!)
+      .getMessagesByAssistant(assistant.id)
       .then((msgs) =>
         setHistoryText(
           msgs.map((message) => `${message.chunks.join('')}`).join('\n'),
         ),
       );
-  }, []);
+  }, [dataProvider, assistant.id]);
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
-  ) => {
+  ): void => {
     setText(e.detail.value);
     updateTextAreaHeight();
   };
 
   const assistantModal = useAssistantModal();
 
-  const onAssistantModalSubmit = (props: AssistantFormFields) => {
-    dataProvider.updateAssistant(assistant.id!, props);
+  const onAssistantModalSubmit = (props: AssistantFormFields): void => {
+    dataProvider.updateAssistant(assistant.id, props);
   };
 
-  const onEditAssistantClick = () =>
-    assistantModal!.openModal({
+  const onEditAssistantClick = (): void =>
+    assistantModal.openModal({
       onSubmit: onAssistantModalSubmit,
       initData: { name: assistant.name, prompt: assistant.prompt },
     });
 
-  const onDeleteAssistantClick = () => {
+  const onDeleteAssistantClick = (): void => {
     setRemovalModalVisible(true);
   };
 
-  const removeAssistant = () => {
-    dataProvider.deleteAssistant(assistant.id!);
+  const removeAssistant = (): void => {
+    dataProvider.deleteAssistant(assistant.id);
     setRemovalModalVisible(false);
     chooseSelectedAssistant();
   };
@@ -106,7 +106,7 @@ const Chat = ({ assistant, chooseSelectedAssistant }: Props) => {
         visible={removalModalVisible}
         text={`You are about to remove ${assistant.name}. Are you sure?`}
         header={`Removing ${assistant.name}`}
-        onCancel={() => setRemovalModalVisible(false)}
+        onCancel={(): void => setRemovalModalVisible(false)}
         onConfirm={removeAssistant}
       />
     </Container>

@@ -1,5 +1,7 @@
+import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, AssistantFormFields } from '../types';
+import { Assistant, AssistantFormFields, Message } from '../types';
+import { generateUUID } from '../utils';
 import { GPTerDexie } from './db';
 
 export class IndexedStorageProvider implements StorageProvider {
@@ -14,7 +16,8 @@ export class IndexedStorageProvider implements StorageProvider {
   }
 
   createAssistant(data: AssistantFormFields): void {
-    this.#db.assistants.add({ ...data });
+    // @TODO - think about building in validation layer
+    this.#db.assistants.add({ ...data, id: generateUUID() });
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {
@@ -25,13 +28,13 @@ export class IndexedStorageProvider implements StorageProvider {
     this.#db.assistants.delete(key);
   }
 
-  getDefaultAssistant() {
+  getDefaultAssistant(): Promise<Nullable<Assistant>> {
     return this.#db.assistants
       .toArray()
       .then((array) => (array.length ? array[0] : null));
   }
 
-  getMessagesByAssistant(assistantId: string) {
+  getMessagesByAssistant(assistantId: string): Promise<Message[]> {
     return this.#db.messages.where({ assistantId }).toArray();
   }
 }

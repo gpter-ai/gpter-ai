@@ -2,7 +2,7 @@ import ContentLayout from '@cloudscape-design/components/content-layout';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import { Grid, GridProps } from '@cloudscape-design/components';
-import { useCallback, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import AssistantsList from './AssistantsList';
 import Chat from './Chat';
 import { Assistant } from '@/data/types';
@@ -10,7 +10,7 @@ import { useDataProvider } from '@/hooks/useDataProvider';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
 
-const Content = () => {
+const Content: FC<{}> = () => {
   const dataProvider = useDataProvider();
 
   const [selectedAssistant, setSelectedAssistant] =

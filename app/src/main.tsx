@@ -6,6 +6,6 @@ import { WithProviders } from '@/components';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <WithProviders>
-    <App />
+    <App />,
   </WithProviders>,
 );

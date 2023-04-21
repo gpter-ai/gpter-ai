@@ -3,11 +3,13 @@ import {
   Button,
   FormField,
   Input,
+  InputProps,
   Modal,
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import { useEffect, useState } from 'react';
+import { NonCancelableEventHandler } from '@cloudscape-design/components/internal/events';
+import { FC, useEffect, useState } from 'react';
 import DangerModal from './DangerModal';
 import { AssistantFormFields } from '@/data/types';
 
@@ -19,7 +21,12 @@ export type Props = {
   initData: AssistantFormFields;
 };
 
-const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
+const AssistantModal: FC<Props> = ({
+  visible,
+  setVisible,
+  onSubmit,
+  initData,
+}) => {
   const [name, setName] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
 
@@ -33,15 +40,16 @@ const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
     setPrompt(initData.prompt);
   }, [initData]);
 
-  const isDirty = () => name !== initData.name || prompt !== initData.prompt;
+  const isDirty = (): boolean =>
+    name !== initData.name || prompt !== initData.prompt;
 
-  const nameValid = () => name.trim() !== '';
-  const promptValid = () => prompt.trim() !== '';
+  const nameValid = (): boolean => name.trim() !== '';
+  const promptValid = (): boolean => prompt.trim() !== '';
 
   // @TODO - come up with better validation rules
-  const isValid = () => nameValid() && promptValid();
+  const isValid = (): boolean => nameValid() && promptValid();
 
-  const setErrorMessages = () => {
+  const setErrorMessages = (): void => {
     if (nameValid() === false) {
       setNameError('Name must not be empty!');
     }
@@ -51,7 +59,7 @@ const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
     }
   };
 
-  const confirmDismiss = () => {
+  const confirmDismiss = (): void => {
     if (isDirty()) {
       setDismissModalOpen(true);
     } else {
@@ -59,7 +67,7 @@ const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
     }
   };
 
-  const dismiss = () => {
+  const dismiss = (): void => {
     setName('');
     setPrompt('');
     setNameError('');
@@ -67,13 +75,27 @@ const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
     setVisible(false);
   };
 
-  const create = () => {
+  const create = (): void => {
     if (isValid()) {
       onSubmit({ name, prompt });
       dismiss();
     } else {
       setErrorMessages();
     }
+  };
+
+  const onChangeName: NonCancelableEventHandler<InputProps.ChangeDetail> = (
+    event,
+  ) => {
+    setName(event.detail.value);
+    setNameError('');
+  };
+
+  const onChangePrompt: NonCancelableEventHandler<InputProps.ChangeDetail> = (
+    event,
+  ) => {
+    setPrompt(event.detail.value);
+    setPromptError('');
   };
 
   return (
@@ -97,32 +119,20 @@ const AssistantModal = ({ visible, setVisible, onSubmit, initData }: Props) => {
     >
       <SpaceBetween direction="vertical" size="m">
         <FormField label="Name" errorText={nameError}>
-          <Input
-            value={name}
-            onChange={(e) => {
-              setName(e.detail.value);
-              setNameError('');
-            }}
-          />
+          <Input value={name} onChange={onChangeName} />
         </FormField>
         <FormField
           label="Prompt"
           errorText={promptError}
           description="Enter 20 to 200 characters"
         >
-          <Textarea
-            value={prompt}
-            onChange={(e) => {
-              setPrompt(e.detail.value);
-              setPromptError('');
-            }}
-          />
+          <Textarea value={prompt} onChange={onChangePrompt} />
         </FormField>
       </SpaceBetween>
       <DangerModal
         visible={dismissModalOpen}
-        onCancel={() => setDismissModalOpen(false)}
-        onConfirm={() => {
+        onCancel={(): void => setDismissModalOpen(false)}
+        onConfirm={(): void => {
           setDismissModalOpen(false);
           dismiss();
         }}

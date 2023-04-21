@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
 import { Box, Container } from '@cloudscape-design/components';
@@ -10,29 +10,28 @@ type Props = {
   setSelectedAssistant: (assistant: Assistant) => void;
 };
 
-const AssistantsList = ({ setSelectedAssistant }: Props) => {
+const AssistantsList: FC<Props> = ({ setSelectedAssistant }) => {
   const [assistants, setAssistants] = useState<Assistant[]>([]);
-
-  useEffect(() => {
-    dataProvider.getAssistants().then(setAssistants);
-  }, []);
-
   const dataProvider = useDataProvider();
   const assistantModal = useAssistantModal();
 
-  const onAssistantModalSubmit = (props: AssistantFormFields) => {
+  useEffect(() => {
+    dataProvider.getAssistants().then(setAssistants);
+  }, [dataProvider]);
+
+  const onAssistantModalSubmit = (props: AssistantFormFields): void => {
     dataProvider.createAssistant(props);
   };
 
-  const onNewAssistantClick = () =>
-    assistantModal!.openModal({ onSubmit: onAssistantModalSubmit });
+  const onNewAssistantClick = (): void =>
+    assistantModal.openModal({ onSubmit: onAssistantModalSubmit });
 
   return (
     <Container>
       <SpaceBetween direction="vertical" size="m">
         {assistants.map((assistant) => (
           <Box key={assistant.id}>
-            <Button onClick={() => setSelectedAssistant(assistant)}>
+            <Button onClick={(): void => setSelectedAssistant(assistant)}>
               {assistant.name}
             </Button>
           </Box>

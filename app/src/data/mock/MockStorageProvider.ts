@@ -1,10 +1,11 @@
+import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
-import { Message } from '../types';
+import { Assistant, Message } from '../types';
 
 import data from './mock-data.json';
 
 export class MockstorageProvider implements StorageProvider {
-  getAssistants() {
+  getAssistants(): Promise<Assistant[]> {
     return Promise.resolve(data.assistants);
   }
 
@@ -14,11 +15,11 @@ export class MockstorageProvider implements StorageProvider {
 
   deleteAssistant(): void {}
 
-  getDefaultAssistant() {
+  getDefaultAssistant(): Promise<Nullable<Assistant>> {
     return Promise.resolve(data.assistants[0]);
   }
 
-  getMessagesByAssistant(assistantId: string) {
+  getMessagesByAssistant(assistantId: string): Promise<Message[]> {
     const messages = data.messages.filter(
       (message) => message.assistantId === assistantId,
     );

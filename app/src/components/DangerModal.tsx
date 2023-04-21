@@ -4,6 +4,7 @@ import {
   Modal,
   SpaceBetween,
 } from '@cloudscape-design/components';
+import { FC } from 'react';
 
 type Props = {
   visible: boolean;
@@ -13,7 +14,13 @@ type Props = {
   header: string;
 };
 
-const DangerModal = ({ visible, onConfirm, onCancel, text, header }: Props) => {
+const DangerModal: FC<Props> = ({
+  visible,
+  onConfirm,
+  onCancel,
+  text,
+  header,
+}) => {
   return (
     <Modal
       visible={visible}
