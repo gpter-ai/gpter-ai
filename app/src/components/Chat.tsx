@@ -33,11 +33,9 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
 
   useEffect(() => {
     dataProvider
-      .getMessagesByAssistant(assistant.id)
-      .then((msgs) =>
-        setHistoryText(
-          msgs.map((message) => `${message.chunks.join('')}`).join('\n'),
-        ),
+      .getChunksByAssistant(assistant.id)
+      .then((chunks) =>
+        setHistoryText(chunks.map((chunk) => chunk.content).join('\n')),
       );
   }, [dataProvider, assistant.id]);
 

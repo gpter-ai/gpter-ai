@@ -25,10 +25,10 @@ const Content: FC<{}> = () => {
     chooseSelectedAssistant();
   }, [chooseSelectedAssistant]);
 
-  const gridDefinition: ReadonlyArray<GridProps.ElementDefinition> = [
-    { colspan: { default: 4, s: 3 } },
-    { colspan: { default: 8, s: 9 } },
-  ];
+  const gridDefinition: ReadonlyArray<GridProps.ElementDefinition> =
+    selectedAssistant
+      ? [{ colspan: { default: 4, s: 3 } }, { colspan: { default: 8, s: 9 } }]
+      : [{ colspan: { default: 4, s: 3 } }];
 
   return (
     <ContentLayout

@@ -1,7 +1,7 @@
 import { Nullable } from '@/types';
 import { DataProvider } from '../DataProvider';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, AssistantFormFields, Message } from '../types';
+import { Assistant, AssistantFormFields, Chunk } from '../types';
 
 export class MockDataProvider implements DataProvider {
   #storageProvider;
@@ -30,7 +30,7 @@ export class MockDataProvider implements DataProvider {
     return this.#storageProvider.getDefaultAssistant();
   }
 
-  getMessagesByAssistant(assistantId: string): Promise<Message[]> {
-    return this.#storageProvider.getMessagesByAssistant(assistantId);
+  getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
+    return this.#storageProvider.getChunksByAssistant(assistantId);
   }
 }

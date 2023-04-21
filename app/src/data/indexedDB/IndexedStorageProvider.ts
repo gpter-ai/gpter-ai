@@ -1,6 +1,6 @@
 import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, AssistantFormFields, Message } from '../types';
+import { Assistant, AssistantFormFields, Chunk } from '../types';
 import { generateUUID } from '../utils';
 import { GPTerDexie } from './db';
 
@@ -34,7 +34,7 @@ export class IndexedStorageProvider implements StorageProvider {
       .then((array) => (array.length ? array[0] : null));
   }
 
-  getMessagesByAssistant(assistantId: string): Promise<Message[]> {
-    return this.#db.messages.where({ assistantId }).toArray();
+  getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
+    return this.#db.chunks.where({ assistantId }).toArray();
   }
 }

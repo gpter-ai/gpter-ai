@@ -1,6 +1,6 @@
 import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, Message } from '../types';
+import { Assistant, Chunk } from '../types';
 
 import data from './mock-data.json';
 
@@ -19,11 +19,11 @@ export class MockstorageProvider implements StorageProvider {
     return Promise.resolve(data.assistants[0]);
   }
 
-  getMessagesByAssistant(assistantId: string): Promise<Message[]> {
-    const messages = data.messages.filter(
-      (message) => message.assistantId === assistantId,
+  getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
+    const chunks = data.chunks.filter(
+      (chunk) => chunk.assistantId === assistantId,
     );
 
-    return Promise.resolve(messages) as Promise<Message[]>;
+    return Promise.resolve(chunks) as Promise<Chunk[]>;
   }
 }

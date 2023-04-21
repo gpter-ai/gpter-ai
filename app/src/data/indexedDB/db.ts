@@ -1,18 +1,16 @@
 import Dexie, { Table } from 'dexie';
-import { Assistant, Message } from '../types';
+import { Assistant, Chunk } from '../types';
 
 export class GPTerDexie extends Dexie {
-  // 'friends' is added by dexie when declaring the stores()
-  // We just tell the typing system this is the case
   assistants!: Table<Assistant>;
 
-  messages!: Table<Message>;
+  chunks!: Table<Chunk>;
 
   assistantIndexedFields: (keyof Assistant | `++${keyof Assistant}`)[] = [
     '++id',
   ];
 
-  messageIndexedFields: (keyof Message | `++${keyof Message}`)[] = [
+  chunkIndexedFields: (keyof Chunk | `++${keyof Chunk}`)[] = [
     '++id',
     'assistantId',
     'timestamp',
@@ -22,7 +20,7 @@ export class GPTerDexie extends Dexie {
     super('GPTer');
     this.version(1).stores({
       assistants: `${this.assistantIndexedFields.join(', ')}`,
-      messages: `${this.messageIndexedFields.join(', ')}`,
+      chunks: `${this.chunkIndexedFields.join(', ')}`,
     });
   }
 }
