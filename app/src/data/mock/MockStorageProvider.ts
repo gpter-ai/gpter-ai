@@ -11,6 +11,8 @@ export class MockstorageProvider implements StorageProvider {
 
   createAssistant(): void {}
 
+  createChunk(): void {}
+
   updateAssistant(): void {}
 
   deleteAssistant(): void {}

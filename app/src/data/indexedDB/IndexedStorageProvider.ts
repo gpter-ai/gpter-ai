@@ -1,7 +1,6 @@
 import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
 import { Assistant, AssistantFormFields, Chunk } from '../types';
-import { generateUUID } from '../utils';
 import { GPTerDexie } from './db';
 
 export class IndexedStorageProvider implements StorageProvider {
@@ -15,9 +14,14 @@ export class IndexedStorageProvider implements StorageProvider {
     return this.#db.assistants.toArray();
   }
 
-  createAssistant(data: AssistantFormFields): void {
+  createAssistant(data: Assistant): void {
     // @TODO - think about building in validation layer
-    this.#db.assistants.add({ ...data, id: generateUUID() });
+    this.#db.assistants.add(data);
+  }
+
+  createChunk(data: Chunk): void {
+    // @TODO - think about building in validation layer
+    this.#db.chunks.add(data);
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {

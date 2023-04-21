@@ -8,10 +8,12 @@ export type Assistant = {
 
 export type AssistantFormFields = Pick<Assistant, 'name' | 'prompt'>;
 
+export type ChatGptRole = 'user' | 'assistant' | 'system';
+
 export type Chunk = {
   id: string;
   assistantId: string;
-  timestamp: string;
-  content: string;
-  role: 'user' | 'assistant' | 'system';
+  timestamp: number;
+  content?: string;
+  role?: ChatGptRole;
 };

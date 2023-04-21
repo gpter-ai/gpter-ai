@@ -2,6 +2,7 @@ import { Nullable } from '@/types';
 import { DataProvider } from '../DataProvider';
 import { StorageProvider } from '../StorageProvider';
 import { Assistant, AssistantFormFields, Chunk } from '../types';
+import { generateUUID } from '../utils';
 
 export class MockDataProvider implements DataProvider {
   #storageProvider;
@@ -15,7 +16,11 @@ export class MockDataProvider implements DataProvider {
   }
 
   createAssistant(data: AssistantFormFields): void {
-    this.#storageProvider.createAssistant(data);
+    this.#storageProvider.createAssistant({ ...data, id: generateUUID() });
+  }
+
+  createChunk(data: Omit<Chunk, 'id'>): void {
+    this.#storageProvider.createChunk({ ...data, id: generateUUID() });
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {
