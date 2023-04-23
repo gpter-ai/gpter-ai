@@ -1,25 +1,28 @@
-import { ChatGptRole, Chunk } from '@/data/types';
-import { Nullable } from '@/types';
+import {
+  ChatCompletionRequestMessage,
+  CreateChatCompletionResponse,
+} from 'openai';
 
 export interface ApiService {
-  postChat(chunks: Chunk[], assistantId: string): void;
+  sendMessages(messages: Array<ChatCompletionRequestMessage>): Promise<void>;
 }
 
-export type ChatCompletionStreamResponseDelta = {
-  content?: string;
-  role?: ChatGptRole;
-};
+export enum ApiResponseType {
+  Done = 'Done',
+  Data = 'Data',
+}
 
-export type ChatCompletionStreamResponseChoice = {
-  delta: ChatCompletionStreamResponseDelta;
-  index: number;
-  finish_reason: Nullable<string>;
-};
+export interface ApiResponseFinish {
+  kind: ApiResponseType.Done;
+}
 
-export type ChatCompletionStreamResponseData = {
-  id: string;
-  object: string;
-  created: number;
-  moidel: string;
-  choices: ChatCompletionStreamResponseChoice[];
-};
+export interface ApiResponseData {
+  kind: ApiResponseType.Data;
+  data: CreateChatCompletionResponse;
+}
+
+export type ApiResponse = ApiResponseFinish | ApiResponseData;
+
+export interface ApiResponseConsumer {
+  processResponse(response: ApiResponse): void;
+}

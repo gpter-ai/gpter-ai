@@ -1,6 +1,6 @@
 {
   "root": true,
-  "ignorePatterns": ["**/**.js"],
+  "ignorePatterns": ["**/**.js", "**/**.test.ts"],
   "extends": [
     "airbnb",
     "airbnb-typescript",
