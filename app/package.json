@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "tsc -p tsconfig.prod.json && vite build && electron-builder",
     "preview": "vite preview",
     "start": "electron-forge start",
     "package": "electron-forge package",
@@ -23,8 +23,8 @@
     "style": "prettier -c ./src",
     "style:fix": "prettier -cw ./src",
     "style:check": "npm run style && npm run lint",
-    "pretest": "npm run style:check",
-    "prepare": "cd .. && husky install"
+    "prepare": "cd .. && husky install",
+    "test": "NODE_ENV=test jest"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.248",
