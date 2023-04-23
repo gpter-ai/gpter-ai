@@ -6,7 +6,23 @@ import {
   ApiService,
 } from './types';
 
-const SAMPLE_MESSAGE = ['Hello!', 'How', 'are', 'you', 'doing?'];
+const SAMPLE_MESSAGE = [
+  'Hello!',
+  'How',
+  'are',
+  'you',
+  'doing?',
+  'I',
+  'am',
+  'a',
+  'human',
+  'and',
+  '-',
+  'am',
+  'not',
+  'a',
+  'robot!',
+];
 
 export class MockApiService implements ApiService {
   constructor(private apiResponseConsumer: ApiResponseConsumer) {}
@@ -27,7 +43,7 @@ export class MockApiService implements ApiService {
         );
       }
       index += 1;
-    }, 1000);
+    }, 500);
   }
 
   private createDataResponse(index: number): ApiResponse {

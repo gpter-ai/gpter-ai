@@ -14,6 +14,10 @@ import { useDataProvider } from '@/hooks/useDataProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
+import { ApiResponse } from '@/api/types';
+import { OpenAiApiService } from '@/api/openaiApiService';
+import { MockApiService } from '@/api/mockApiService';
+import { UserRequestHandler } from '@/data/UserRequestHandler';
 
 type Props = {
   assistant: Assistant;
@@ -32,6 +36,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const dataProvider = useDataProvider();
 
   useEffect(() => {
+    console.log('use effect');
     dataProvider
       .getChunksByAssistant(assistant.id)
       .then((chunks) =>
@@ -55,7 +60,10 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const onEditAssistantClick = (): void =>
     assistantModal.openModal({
       onSubmit: onAssistantModalSubmit,
-      initData: { name: assistant.name, prompt: assistant.prompt },
+      initData: {
+        name: assistant.name,
+        prompt: assistant.prompt,
+      },
     });
 
   const onDeleteAssistantClick = (): void => {
@@ -79,6 +87,21 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     </SpaceBetween>
   );
 
+  // This is just an example. Needs refactoring
+  const onGetMessages = (msg: string): void => {
+    setHistoryText((h) => `${h} ${msg}`);
+  };
+
+  const onSubmitClick = async (): Promise<void> => {
+    const handler = new UserRequestHandler(
+      dataProvider,
+      assistant.id,
+      onGetMessages,
+    );
+    await handler.processUserMessage(`${text}
+`);
+  };
+
   return (
     <Container
       header={
@@ -96,7 +119,9 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
           <Textarea value={historyText} rows={10} disabled />
           <Textarea value={text} onChange={onValueChange} rows={1} autoFocus />
           <Box textAlign="right">
-            <Button variant="primary">Submit</Button>
+            <Button variant="primary" onClick={onSubmitClick}>
+              Submit
+            </Button>
           </Box>
         </SpaceBetween>
       </div>
