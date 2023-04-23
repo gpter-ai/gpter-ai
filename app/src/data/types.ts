@@ -17,3 +17,7 @@ export type Chunk = {
   content?: string;
   role?: ChatGptRole;
 };
+
+export type UserConfig = {
+  apiKey: string;
+};

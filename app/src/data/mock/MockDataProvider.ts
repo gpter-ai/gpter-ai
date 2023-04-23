@@ -1,7 +1,7 @@
 import { Nullable } from '@/types';
 import { DataProvider } from '../DataProvider';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, AssistantFormFields, Chunk } from '../types';
+import { Assistant, AssistantFormFields, Chunk, UserConfig } from '../types';
 import { generateUUID } from '../utils';
 
 export class MockDataProvider implements DataProvider {
@@ -37,5 +37,13 @@ export class MockDataProvider implements DataProvider {
 
   getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
     return this.#storageProvider.getChunksByAssistant(assistantId);
+  }
+
+  putUserConfig(config: UserConfig): void {
+    this.#storageProvider.putUserConfig(config);
+  }
+
+  getUserConfig(): Promise<Nullable<UserConfig>> {
+    return this.#storageProvider.getUserConfig();
   }
 }

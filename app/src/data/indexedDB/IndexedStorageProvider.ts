@@ -1,7 +1,8 @@
 import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, AssistantFormFields, Chunk } from '../types';
+import { Assistant, AssistantFormFields, Chunk, UserConfig } from '../types';
 import { GPTerDexie } from './db';
+import { USER_CONFIG_STORAGE_KEY } from '../mock/constants';
 
 export class IndexedStorageProvider implements StorageProvider {
   #db: GPTerDexie;
@@ -40,5 +41,15 @@ export class IndexedStorageProvider implements StorageProvider {
 
   getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
     return this.#db.chunks.where({ assistantId }).toArray();
+  }
+
+  putUserConfig(config: UserConfig): void {
+    localStorage.setItem(USER_CONFIG_STORAGE_KEY, JSON.stringify(config));
+  }
+
+  getUserConfig(): Promise<Nullable<UserConfig>> {
+    const config = localStorage.getItem(USER_CONFIG_STORAGE_KEY);
+
+    return Promise.resolve(config ? JSON.parse(config) : null);
   }
 }

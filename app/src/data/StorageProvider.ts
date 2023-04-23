@@ -1,5 +1,5 @@
 import { Nullable } from '@/types';
-import { Assistant, AssistantFormFields, Chunk } from './types';
+import { Assistant, AssistantFormFields, Chunk, UserConfig } from './types';
 
 export interface StorageProvider {
   getAssistants(): Promise<Assistant[]>;
@@ -9,4 +9,6 @@ export interface StorageProvider {
   deleteAssistant(key: string): void;
   getDefaultAssistant(): Promise<Nullable<Assistant>>;
   getChunksByAssistant(assistantId: string): Promise<Chunk[]>;
+  putUserConfig(config: UserConfig): void;
+  getUserConfig(): Promise<Nullable<UserConfig>>;
 }

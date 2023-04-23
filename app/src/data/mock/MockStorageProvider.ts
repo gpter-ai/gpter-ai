@@ -1,8 +1,9 @@
 import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
-import { Assistant, Chunk } from '../types';
+import { Assistant, Chunk, UserConfig } from '../types';
 
 import data from './mock-data.json';
+import { USER_CONFIG_STORAGE_KEY } from './constants';
 
 export class MockstorageProvider implements StorageProvider {
   getAssistants(): Promise<Assistant[]> {
@@ -27,5 +28,15 @@ export class MockstorageProvider implements StorageProvider {
     );
 
     return Promise.resolve(chunks) as Promise<Chunk[]>;
+  }
+
+  putUserConfig(config: UserConfig): void {
+    localStorage.setItem(USER_CONFIG_STORAGE_KEY, JSON.stringify(config));
+  }
+
+  getUserConfig(): Promise<Nullable<UserConfig>> {
+    const config = localStorage.getItem(USER_CONFIG_STORAGE_KEY);
+
+    return Promise.resolve(config ? JSON.parse(config) : null);
   }
 }

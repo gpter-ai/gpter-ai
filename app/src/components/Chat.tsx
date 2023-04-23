@@ -14,9 +14,6 @@ import { useDataProvider } from '@/hooks/useDataProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
-import { ApiResponse } from '@/api/types';
-import { OpenAiApiService } from '@/api/openaiApiService';
-import { MockApiService } from '@/api/mockApiService';
 import { UserRequestHandler } from '@/data/UserRequestHandler';
 
 type Props = {
@@ -36,7 +33,6 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const dataProvider = useDataProvider();
 
   useEffect(() => {
-    console.log('use effect');
     dataProvider
       .getChunksByAssistant(assistant.id)
       .then((chunks) =>
