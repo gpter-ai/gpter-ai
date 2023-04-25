@@ -1,19 +1,19 @@
 import ContentLayout from '@cloudscape-design/components/content-layout';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
-import { Grid, GridProps } from '@cloudscape-design/components';
+import { Box, Button, Grid, GridProps } from '@cloudscape-design/components';
 import { FC, useCallback, useContext, useEffect, useState } from 'react';
 import AssistantsList from './AssistantsList';
 import Chat from './Chat';
-import { Assistant } from '@/data/types';
+import { Assistant, UserConfig } from '@/data/types';
 import { useDataProvider } from '@/hooks/useDataProvider';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
-import ApiKeyModal from './ApiKeyModal';
+import ConfigModal from './ConfigModal/ConfigModal';
 
 const Content: FC<{}> = () => {
-  const [apiKeyModalVisible, setApiKeyModalVisible] = useState<boolean>(false);
+  const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
   const dataProvider = useDataProvider();
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
@@ -32,7 +32,7 @@ const Content: FC<{}> = () => {
 
   useEffect(() => {
     if (!configLoading && !userConfig?.apiKey) {
-      setApiKeyModalVisible(true);
+      setConfigModalVisible(true);
     }
   }, [userConfig?.apiKey, configLoading]);
 
@@ -41,20 +41,37 @@ const Content: FC<{}> = () => {
       ? [{ colspan: { default: 4, s: 3 } }, { colspan: { default: 8, s: 9 } }]
       : [{ colspan: { default: 4, s: 3 } }];
 
-  const onApiKeyModalConfirm = (apiKey: string): void => {
+  const onConfigModalConfirm = (config: Partial<UserConfig>): void => {
     // eslint-disable-next-line prefer-object-spread
-    const newConfig = Object.assign({}, userConfig, { apiKey });
+    const newConfig = Object.assign({}, userConfig, config);
     setUserConfig(newConfig);
     storeUserConfig(newConfig);
-    setApiKeyModalVisible(false);
+    setConfigModalVisible(false);
   };
+
+  const headerActions = (
+    <SpaceBetween direction="horizontal" size="xs">
+      <Button
+        iconName="settings"
+        onClick={(): void => {
+          setConfigModalVisible(true);
+        }}
+      >
+        Configure
+      </Button>
+    </SpaceBetween>
+  );
 
   return (
     <ContentLayout
       header={
-        <SpaceBetween size="m">
-          <Header variant="h1">GPTer</Header>
-        </SpaceBetween>
+        <Box margin={{ top: 'm' }}>
+          <SpaceBetween size="m">
+            <Header actions={headerActions} variant="h1">
+              GPTer
+            </Header>
+          </SpaceBetween>
+        </Box>
       }
     >
       <AssistantModalProvider>
@@ -68,9 +85,10 @@ const Content: FC<{}> = () => {
           )}
         </Grid>
       </AssistantModalProvider>
-      <ApiKeyModal
-        visible={apiKeyModalVisible}
-        onConfirm={onApiKeyModalConfirm}
+      <ConfigModal
+        initValues={userConfig || {}}
+        visible={configModalVisible}
+        onConfirm={onConfigModalConfirm}
       />
     </ContentLayout>
   );

@@ -20,4 +20,5 @@ export type Chunk = {
 
 export type UserConfig = {
   apiKey: string;
+  maxTokens: number;
 };
