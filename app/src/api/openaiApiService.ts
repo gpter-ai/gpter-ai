@@ -1,7 +1,4 @@
-import {
-  EventSourceMessage,
-  fetchEventSource,
-} from '@microsoft/fetch-event-source';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 import {
   ChatCompletionRequestMessage,
   CreateChatCompletionRequest,
@@ -13,18 +10,12 @@ import {
   DATA_STREAM_DONE_INDICATOR,
   OPENAI_MODEL,
 } from './constants';
-import {
-  ApiResponse,
-  ApiResponseConsumer,
-  ApiResponseType,
-  ApiService,
-} from './types';
+import { ApiResponse, ApiResponseType, ApiService } from './types';
 
 export class OpenAiApiService implements ApiService {
-  constructor(private apiResponseConsumer: ApiResponseConsumer) {}
-
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
+    onResponse: (response: ApiResponse) => void,
   ): Promise<void> {
     const requestParam: CreateChatCompletionRequest = {
       model: OPENAI_MODEL,
@@ -36,26 +27,21 @@ export class OpenAiApiService implements ApiService {
       authorization: `Bearer ${API_KEY}`,
       'Content-Type': 'application/json',
     };
+
     await fetchEventSource(`${BASE_OPENAI_URL}v1/chat/completions`, {
       method: 'POST',
       body: JSON.stringify(requestParam),
       headers,
-      onmessage: (msg) => this.onMessage(msg),
+      onmessage: (msg) => {
+        const apiResponse: ApiResponse =
+          msg.data === DATA_STREAM_DONE_INDICATOR
+            ? { kind: ApiResponseType.Done }
+            : {
+                kind: ApiResponseType.Data,
+                data: JSON.parse(msg.data) as CreateChatCompletionResponse,
+              };
+        onResponse(apiResponse);
+      },
     });
-  }
-
-  private processResponse(apiResponse: ApiResponse): void {
-    this.apiResponseConsumer.processResponse(apiResponse);
-  }
-
-  private onMessage(event: EventSourceMessage): void {
-    const apiResponse: ApiResponse =
-      event.data === DATA_STREAM_DONE_INDICATOR
-        ? { kind: ApiResponseType.Done }
-        : {
-            kind: ApiResponseType.Data,
-            data: JSON.parse(event.data) as CreateChatCompletionResponse,
-          };
-    this.processResponse(apiResponse);
   }
 }

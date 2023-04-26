@@ -16,6 +16,10 @@ export class IndexedStorageProvider implements StorageProvider {
     return this.#db.assistants.toArray();
   }
 
+  getAssistant(key: string): Promise<Nullable<Assistant>> {
+    return this.#db.assistants.get(key);
+  }
+
   createAssistant(data: AssistantFormFields): void {
     // @TODO - think about building in validation layer
     this.#db.assistants.add({ ...data, id: generateUUID() });
@@ -43,6 +47,10 @@ export class IndexedStorageProvider implements StorageProvider {
 
   getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
     return this.#db.chunks.where({ assistantId }).toArray();
+  }
+
+  getChunksByFilter(filter: (chunk: Chunk) => boolean): Promise<Chunk[]> {
+    return this.#db.chunks.filter(filter).toArray();
   }
 
   putUserConfig(config: UserConfig): void {

@@ -4,7 +4,10 @@ import {
 } from 'openai';
 
 export interface ApiService {
-  sendMessages(messages: Array<ChatCompletionRequestMessage>): Promise<void>;
+  sendMessages(
+    messages: Array<ChatCompletionRequestMessage>,
+    onResponse: (response: ApiResponse) => void,
+  ): Promise<void>;
 }
 
 export enum ApiResponseType {
@@ -22,7 +25,3 @@ export interface ApiResponseData {
 }
 
 export type ApiResponse = ApiResponseFinish | ApiResponseData;
-
-export interface ApiResponseConsumer {
-  processResponse(response: ApiResponse): void;
-}

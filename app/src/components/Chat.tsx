@@ -8,28 +8,19 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
+import { ChatCompletionRequestMessage } from 'openai';
 import { FC, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
-import {
-  Assistant,
-  AssistantFormFields,
-  ChatGptRole,
-  Chunk,
-} from '@/data/types';
+import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
-import { UserRequestHandler } from '@/data/UserRequestHandler';
+import { useChatService } from '@/data/ChatService';
 
 type Props = {
   assistant: Assistant;
   chooseSelectedAssistant: () => void;
-};
-
-type Message = {
-  author: ChatGptRole;
-  content: string;
 };
 
 const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
@@ -39,38 +30,16 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
   const storageProvider = useStorageProvider();
+  const { chatService } = useChatService(storageProvider);
 
-  const convertChunksToMessages = (chunks: Chunk[]): Message[] => {
-    if (chunks.length === 0) return [];
-    const messages: Message[] = [];
-
-    let currentMessage: Message = {} as Message;
-
-    for (const chunk of chunks) {
-      // @TODO - here we trust that a chunk with a role is always the first chunk of a message
-      if (chunk.role && chunk.role !== currentMessage.author) {
-        if (currentMessage.author && currentMessage.content) {
-          messages.push(currentMessage);
-        }
-        currentMessage = { author: chunk.role, content: chunk.content ?? '' };
-      } else {
-        currentMessage.content += chunk.content ?? '';
-      }
-    }
-
-    messages.push(currentMessage);
-
-    return messages;
-  };
-
-  const fetchHistory = (): Promise<Message[]> => {
+  const fetchHistory = (): Promise<ChatCompletionRequestMessage[]> => {
     return storageProvider
       .getChunksByAssistant(assistant.id)
       .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
-      .then(convertChunksToMessages);
+      .then(chatService.convertChunksToMessages);
   };
 
-  const history: Message[] = useLiveQuery(
+  const history: ChatCompletionRequestMessage[] = useLiveQuery(
     fetchHistory,
     [storageProvider, assistant.id],
     [],
@@ -121,8 +90,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
 
   const onMessageSubmit = async (): Promise<void> => {
     setText('');
-    const handler = new UserRequestHandler(storageProvider, assistant.id);
-    await handler.processUserMessage(`${text}`);
+    await chatService.onMessageSubmit(`${text}`, assistant.id);
   };
 
   return (
@@ -140,7 +108,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
       <div ref={containerRef}>
         <SpaceBetween size="m" direction="vertical">
           <Textarea
-            value={history.map((m) => `${m.author}: ${m.content}`).join('\n\n')}
+            value={history.map((m) => `${m.role}: ${m.content}`).join('\n\n')}
             rows={10}
             disabled
           />

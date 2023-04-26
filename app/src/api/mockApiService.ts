@@ -1,10 +1,5 @@
 import { ChatCompletionRequestMessage } from 'openai';
-import {
-  ApiResponse,
-  ApiResponseConsumer,
-  ApiResponseType,
-  ApiService,
-} from './types';
+import { ApiResponse, ApiResponseType, ApiService } from './types';
 
 const SAMPLE_MESSAGE = [
   'Hello! ',
@@ -25,22 +20,19 @@ const SAMPLE_MESSAGE = [
 ];
 
 export class MockApiService implements ApiService {
-  constructor(private apiResponseConsumer: ApiResponseConsumer) {}
-
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
+    onResponse: (response: ApiResponse) => void,
   ): Promise<void> {
+    console.log('SENDING FOLLOWING MESSAGES', messages);
+
     let index = 0;
     const intervalId = setInterval(() => {
       if (index >= SAMPLE_MESSAGE.length) {
         clearInterval(intervalId);
-        this.apiResponseConsumer.processResponse({
-          kind: ApiResponseType.Done,
-        });
+        onResponse({ kind: ApiResponseType.Done });
       } else {
-        this.apiResponseConsumer.processResponse(
-          this.createDataResponse(index),
-        );
+        onResponse(this.createDataResponse(index));
       }
       index += 1;
     }, 500);

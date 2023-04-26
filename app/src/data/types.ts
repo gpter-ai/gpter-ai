@@ -14,11 +14,12 @@ export type Chunk = {
   id: string;
   assistantId: string;
   timestamp: number;
-  content?: string;
-  role?: ChatGptRole;
+  content: string;
+  role: ChatGptRole;
 };
 
 export type UserConfig = {
   apiKey: string;
+  // @TODO - currently this is not used
   maxTokens: number;
 };
