@@ -41,6 +41,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const dataProvider = useDataProvider();
 
   const convertChunksToMessages = (chunks: Chunk[]): Message[] => {
+    if (chunks.length === 0) return [];
     const messages: Message[] = [];
 
     let currentMessage: Message = {} as Message;
