@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
 import { Box, Container } from '@cloudscape-design/components';
-import { useDataProvider } from '@/hooks/useDataProvider';
+import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 
@@ -12,17 +12,17 @@ type Props = {
 };
 
 const AssistantsList: FC<Props> = ({ setSelectedAssistant }) => {
-  const dataProvider = useDataProvider();
+  const storageProvider = useStorageProvider();
   const assistantModal = useAssistantModal();
 
   const assistants = useLiveQuery(
-    dataProvider.getAssistants.bind(dataProvider),
-    [dataProvider],
+    storageProvider.getAssistants.bind(storageProvider),
+    [storageProvider],
     [],
   );
 
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
-    dataProvider.createAssistant(props);
+    storageProvider.createAssistant(props);
   };
 
   const onNewAssistantClick = (): void =>

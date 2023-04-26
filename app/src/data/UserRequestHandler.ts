@@ -1,4 +1,4 @@
-import { DataProvider } from '@/data/DataProvider';
+import { StorageProvider } from '@/data/StorageProvider';
 import {
   ApiResponse,
   ApiResponseConsumer,
@@ -10,7 +10,10 @@ import { MockApiService } from '@/api/mockApiService';
 export class UserRequestHandler implements ApiResponseConsumer {
   #apiService: ApiService;
 
-  constructor(private dataProvider: DataProvider, private assistantId: string) {
+  constructor(
+    private storageProvider: StorageProvider,
+    private assistantId: string,
+  ) {
     this.#apiService = new MockApiService(this);
   }
 
@@ -20,7 +23,7 @@ export class UserRequestHandler implements ApiResponseConsumer {
     if (response.kind === ApiResponseType.Data) {
       const chunkContent = response.data?.choices[0]?.message?.content ?? '';
 
-      this.dataProvider.createChunk({
+      this.storageProvider.createChunk({
         content: chunkContent,
         role: 'assistant',
         assistantId: this.assistantId,
@@ -30,7 +33,7 @@ export class UserRequestHandler implements ApiResponseConsumer {
   }
 
   public async processUserMessage(message: string): Promise<void> {
-    this.dataProvider.createChunk({
+    this.storageProvider.createChunk({
       content: message,
       role: 'user',
       assistantId: this.assistantId,

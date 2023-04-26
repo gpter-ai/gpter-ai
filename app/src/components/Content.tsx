@@ -6,7 +6,7 @@ import { FC, useCallback, useContext, useEffect, useState } from 'react';
 import AssistantsList from './AssistantsList';
 import Chat from './Chat';
 import { Assistant, UserConfig } from '@/data/types';
-import { useDataProvider } from '@/hooks/useDataProvider';
+import { useStorageProvider } from '@/hooks/useStorageProvider';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
@@ -14,7 +14,7 @@ import ConfigModal from './ConfigModal/ConfigModal';
 
 const Content: FC<{}> = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
-  const dataProvider = useDataProvider();
+  const storageProvider = useStorageProvider();
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
 
@@ -22,8 +22,8 @@ const Content: FC<{}> = () => {
     useState<Nullable<Assistant>>(null);
 
   const chooseSelectedAssistant = useCallback(
-    () => dataProvider.getDefaultAssistant().then(setSelectedAssistant),
-    [dataProvider],
+    () => storageProvider.getDefaultAssistant().then(setSelectedAssistant),
+    [storageProvider],
   );
 
   useEffect(() => {

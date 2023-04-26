@@ -2,7 +2,8 @@ import { Nullable } from '@/types';
 import { StorageProvider } from '../StorageProvider';
 import { Assistant, AssistantFormFields, Chunk, UserConfig } from '../types';
 import { GPTerDexie } from './db';
-import { USER_CONFIG_STORAGE_KEY } from '../mock/constants';
+import { USER_CONFIG_STORAGE_KEY } from '../constants';
+import { generateUUID } from '../utils';
 
 export class IndexedStorageProvider implements StorageProvider {
   #db: GPTerDexie;
@@ -15,14 +16,14 @@ export class IndexedStorageProvider implements StorageProvider {
     return this.#db.assistants.toArray();
   }
 
-  createAssistant(data: Assistant): void {
+  createAssistant(data: AssistantFormFields): void {
     // @TODO - think about building in validation layer
-    this.#db.assistants.add(data);
+    this.#db.assistants.add({ ...data, id: generateUUID() });
   }
 
-  createChunk(data: Chunk): void {
+  createChunk(data: Omit<Chunk, 'id'>): void {
     // @TODO - think about building in validation layer
-    this.#db.chunks.add(data);
+    this.#db.chunks.add({ ...data, id: generateUUID() });
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {

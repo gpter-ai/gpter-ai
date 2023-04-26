@@ -11,7 +11,7 @@ import {
 import { FC, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
-import { useDataProvider } from '@/hooks/useDataProvider';
+import { useStorageProvider } from '@/hooks/useStorageProvider';
 import {
   Assistant,
   AssistantFormFields,
@@ -38,7 +38,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
-  const dataProvider = useDataProvider();
+  const storageProvider = useStorageProvider();
 
   const convertChunksToMessages = (chunks: Chunk[]): Message[] => {
     if (chunks.length === 0) return [];
@@ -64,7 +64,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   };
 
   const fetchHistory = (): Promise<Message[]> => {
-    return dataProvider
+    return storageProvider
       .getChunksByAssistant(assistant.id)
       .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
       .then(convertChunksToMessages);
@@ -72,7 +72,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
 
   const history: Message[] = useLiveQuery(
     fetchHistory,
-    [dataProvider, assistant.id],
+    [storageProvider, assistant.id],
     [],
   );
 
@@ -86,7 +86,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const assistantModal = useAssistantModal();
 
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
-    dataProvider.updateAssistant(assistant.id, props);
+    storageProvider.updateAssistant(assistant.id, props);
   };
 
   const onEditAssistantClick = (): void =>
@@ -104,7 +104,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
 
   const removeAssistant = (): void => {
     // @TOOD - also cascading delete all related chunks
-    dataProvider.deleteAssistant(assistant.id);
+    storageProvider.deleteAssistant(assistant.id);
     setRemovalModalVisible(false);
     chooseSelectedAssistant();
   };
@@ -122,7 +122,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
 
   const onMessageSubmit = async (): Promise<void> => {
     setText('');
-    const handler = new UserRequestHandler(dataProvider, assistant.id);
+    const handler = new UserRequestHandler(storageProvider, assistant.id);
     await handler.processUserMessage(`${text}`);
   };
 

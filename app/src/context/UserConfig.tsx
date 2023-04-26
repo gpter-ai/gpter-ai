@@ -9,7 +9,7 @@ import {
   useMemo,
 } from 'react';
 import { UserConfig } from '@/data/types';
-import { useDataProvider } from '@/hooks/useDataProvider';
+import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { Nullable } from '@/types';
 
 type UserConfigContextValue = {
@@ -30,16 +30,16 @@ export const UserConfigContext = createContext<UserConfigContextValue>(
 const UserConfigProvider: FC<UserConfigProviderProps> = ({ children }) => {
   const [userConfig, setUserConfig] = useState<Nullable<UserConfig>>(null);
   const [configLoading, setConfigLoading] = useState<boolean>(true);
-  const dataProvider = useDataProvider();
+  const storageProvider = useStorageProvider();
 
   useEffect(() => {
-    dataProvider
+    storageProvider
       .getUserConfig()
       .then(setUserConfig)
       .finally(() => {
         setConfigLoading(false);
       });
-  }, [dataProvider]);
+  }, [storageProvider]);
 
   // @TODO - consider combining store and set for consumers
   const value = useMemo(
@@ -47,9 +47,9 @@ const UserConfigProvider: FC<UserConfigProviderProps> = ({ children }) => {
       userConfig,
       configLoading,
       setUserConfig,
-      storeUserConfig: dataProvider.putUserConfig.bind(dataProvider),
+      storeUserConfig: storageProvider.putUserConfig.bind(storageProvider),
     }),
-    [userConfig, dataProvider, configLoading],
+    [userConfig, storageProvider, configLoading],
   );
 
   return (
