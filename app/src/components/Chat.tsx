@@ -102,9 +102,8 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     setRemovalModalVisible(true);
   };
 
-  const removeAssistant = (): void => {
-    // @TOOD - also cascading delete all related chunks
-    storageProvider.deleteAssistant(assistant.id);
+  const removeAssistant = async (): Promise<void> => {
+    await storageProvider.deleteAssistant(assistant.id);
     setRemovalModalVisible(false);
     chooseSelectedAssistant();
   };

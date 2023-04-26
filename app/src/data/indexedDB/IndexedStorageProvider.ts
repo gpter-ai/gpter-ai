@@ -30,8 +30,9 @@ export class IndexedStorageProvider implements StorageProvider {
     this.#db.assistants.update(key, { ...data });
   }
 
-  deleteAssistant(key: string): void {
-    this.#db.assistants.delete(key);
+  async deleteAssistant(key: string): Promise<void> {
+    await this.#db.chunks.where({ assistantId: key }).delete();
+    await this.#db.assistants.delete(key);
   }
 
   getDefaultAssistant(): Promise<Nullable<Assistant>> {
