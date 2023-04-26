@@ -8,10 +8,16 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import { FC, useEffect, useState } from 'react';
+import { FC, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useDataProvider } from '@/hooks/useDataProvider';
-import { Assistant, AssistantFormFields } from '@/data/types';
+import {
+  Assistant,
+  AssistantFormFields,
+  ChatGptRole,
+  Chunk,
+} from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
 import { UserRequestHandler } from '@/data/UserRequestHandler';
@@ -21,24 +27,53 @@ type Props = {
   chooseSelectedAssistant: () => void;
 };
 
+type Message = {
+  author: ChatGptRole;
+  content: string;
+};
+
 const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const [text, setText] = useState('');
-
-  // @TODO - replace with an array of message objects later
-  const [historyText, setHistoryText] = useState<string>('');
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
 
   const dataProvider = useDataProvider();
 
-  useEffect(() => {
-    dataProvider
+  const convertChunksToMessages = (chunks: Chunk[]): Message[] => {
+    const messages: Message[] = [];
+
+    let currentMessage: Message = {} as Message;
+
+    for (const chunk of chunks) {
+      // @TODO - here we trust that a chunk with a role is always the first chunk of a message
+      if (chunk.role && chunk.role !== currentMessage.author) {
+        if (currentMessage.author && currentMessage.content) {
+          messages.push(currentMessage);
+        }
+        currentMessage = { author: chunk.role, content: chunk.content ?? '' };
+      } else {
+        currentMessage.content += chunk.content ?? '';
+      }
+    }
+
+    messages.push(currentMessage);
+
+    return messages;
+  };
+
+  const fetchHistory = (): Promise<Message[]> => {
+    return dataProvider
       .getChunksByAssistant(assistant.id)
-      .then((chunks) =>
-        setHistoryText(chunks.map((chunk) => chunk.content).join('\n')),
-      );
-  }, [dataProvider, assistant.id]);
+      .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
+      .then(convertChunksToMessages);
+  };
+
+  const history: Message[] = useLiveQuery(
+    fetchHistory,
+    [dataProvider, assistant.id],
+    [],
+  );
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
@@ -67,6 +102,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   };
 
   const removeAssistant = (): void => {
+    // @TOOD - also cascading delete all related chunks
     dataProvider.deleteAssistant(assistant.id);
     setRemovalModalVisible(false);
     chooseSelectedAssistant();
@@ -83,19 +119,10 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     </SpaceBetween>
   );
 
-  // This is just an example. Needs refactoring
-  const onGetMessages = (msg: string): void => {
-    setHistoryText((h) => `${h} ${msg}`);
-  };
-
-  const onSubmitClick = async (): Promise<void> => {
-    const handler = new UserRequestHandler(
-      dataProvider,
-      assistant.id,
-      onGetMessages,
-    );
-    await handler.processUserMessage(`${text}
-`);
+  const onMessageSubmit = async (): Promise<void> => {
+    setText('');
+    const handler = new UserRequestHandler(dataProvider, assistant.id);
+    await handler.processUserMessage(`${text}`);
   };
 
   return (
@@ -112,10 +139,14 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     >
       <div ref={containerRef}>
         <SpaceBetween size="m" direction="vertical">
-          <Textarea value={historyText} rows={10} disabled />
+          <Textarea
+            value={history.map((m) => `${m.author}: ${m.content}`).join('\n\n')}
+            rows={10}
+            disabled
+          />
           <Textarea value={text} onChange={onValueChange} rows={1} autoFocus />
           <Box textAlign="right">
-            <Button variant="primary" onClick={onSubmitClick}>
+            <Button variant="primary" onClick={onMessageSubmit}>
               Submit
             </Button>
           </Box>

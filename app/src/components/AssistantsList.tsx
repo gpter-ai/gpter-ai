@@ -1,4 +1,5 @@
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
 import { Box, Container } from '@cloudscape-design/components';
@@ -11,13 +12,14 @@ type Props = {
 };
 
 const AssistantsList: FC<Props> = ({ setSelectedAssistant }) => {
-  const [assistants, setAssistants] = useState<Assistant[]>([]);
   const dataProvider = useDataProvider();
   const assistantModal = useAssistantModal();
 
-  useEffect(() => {
-    dataProvider.getAssistants().then(setAssistants);
-  }, [dataProvider]);
+  const assistants = useLiveQuery(
+    dataProvider.getAssistants.bind(dataProvider),
+    [dataProvider],
+    [],
+  );
 
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
     dataProvider.createAssistant(props);
