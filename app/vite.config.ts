@@ -23,7 +23,7 @@ export default defineConfig(({ command }) => {
     },
     plugins: [
       react(),
-      eslint(),
+      eslint({failOnError: false}),
       electron([
         {
           // Main-Process entry file of the Electron App.

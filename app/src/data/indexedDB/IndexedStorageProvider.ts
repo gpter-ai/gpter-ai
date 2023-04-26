@@ -40,7 +40,13 @@ export class IndexedStorageProvider implements StorageProvider {
   }
 
   getChunksByAssistant(assistantId: string): Promise<Chunk[]> {
-    return this.#db.chunks.where({ assistantId }).toArray();
+    return new Promise<Chunk[]>((resolve) => {
+      this.#db.chunks
+        .where({ assistantId })
+        .toArray()
+        .then((result) => resolve(result))
+        .catch(() => resolve([]));
+    });
   }
 
   putUserConfig(config: UserConfig): void {

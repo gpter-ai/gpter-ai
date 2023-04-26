@@ -86,9 +86,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
       visible={visible}
       closeAriaLabel="Close modal"
       size="medium"
-      onDismiss={(): void => {
-        validate();
-      }}
+      onDismiss={onSubmit}
       footer={
         <Box float="right">
           <SpaceBetween direction="horizontal" size="xs">
