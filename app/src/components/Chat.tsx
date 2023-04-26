@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Container,
+  FormField,
   Header,
   InputProps,
   NonCancelableCustomEvent,
@@ -25,6 +26,7 @@ type Props = {
 
 const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const [text, setText] = useState('');
+  const [inputError, setInputError] = useState('');
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
@@ -48,6 +50,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
   ): void => {
+    setInputError('');
     setText(e.detail.value);
     updateTextAreaHeight();
   };
@@ -89,6 +92,11 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   );
 
   const onMessageSubmit = async (): Promise<void> => {
+    if (!text.trim()) {
+      setInputError('Please input your text');
+      return;
+    }
+
     setText('');
     await chatService.onMessageSubmit(`${text}`, assistant.id);
   };
@@ -99,7 +107,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
         <Header
           actions={headerActions}
           variant="h2"
-          description="Please input your text"
+          description={`Prompt: ${assistant.prompt}`}
         >
           {assistant.name}
         </Header>
@@ -112,7 +120,14 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
             rows={10}
             disabled
           />
-          <Textarea value={text} onChange={onValueChange} rows={1} autoFocus />
+          <FormField errorText={inputError} stretch label="Type a query">
+            <Textarea
+              value={text}
+              onChange={onValueChange}
+              rows={1}
+              autoFocus
+            />
+          </FormField>
           <Box textAlign="right">
             <Button variant="primary" onClick={onMessageSubmit}>
               Submit
