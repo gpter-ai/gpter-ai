@@ -18,6 +18,10 @@ const HISTORY_STEPS = aggregateIntervals([
   minutesToMs(1),
 ]);
 
+export const getHistoryStartTimestamp = (): number => {
+  return Date.now() - HISTORY_STEPS[0];
+};
+
 export const getHistoryStartDateFromDiffs = (msDiffs: number[]): number => {
   if (msDiffs.length === 0) return 0;
 
