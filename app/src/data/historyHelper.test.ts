@@ -1,4 +1,7 @@
-import { getHistoryStartDateFromDiffs } from './historyHelper';
+import {
+  getHistoryStartDateFromDiffs,
+  getHistoryStartDateFromTimeStamps,
+} from './historyHelper';
 import {
   aggregateIntervals,
   daysToMs,
@@ -54,6 +57,21 @@ describe('getHistoryStartDate', () => {
         aggregateIntervals(input),
       );
       expect(historyStartDate).toEqual(expected);
+    });
+  });
+
+  describe('getHistoryStartDateFromTimeStamps', () => {
+    it('should return expected value', () => {
+      const testDate = Date.now();
+      const historyStartDate = getHistoryStartDateFromTimeStamps([
+        testDate - daysToMs(1),
+        testDate - daysToMs(1) - minutesToMs(60),
+        testDate - daysToMs(1) - minutesToMs(60) - minutesToMs(60),
+      ]);
+
+      const expectedStartDate = testDate - daysToMs(1) - minutesToMs(60);
+
+      expect(historyStartDate).toEqual(expectedStartDate);
     });
   });
 });

@@ -1,3 +1,4 @@
+import { orderBy } from 'lodash';
 import {
   aggregateIntervals,
   daysToMs,
@@ -32,4 +33,17 @@ export const getHistoryStartDateFromDiffs = (msDiffs: number[]): number => {
   }
 
   return msDiffs[msDiffs.length - 1];
+};
+
+export const getHistoryStartDateFromTimeStamps = (
+  timeStamps: number[],
+): number => {
+  const sortedTimeStamps = orderBy(timeStamps);
+  const msDiffs = [];
+  for (let i = 1; i < sortedTimeStamps.length; i++) {
+    msDiffs.push(sortedTimeStamps[i] - sortedTimeStamps[i - 1]);
+  }
+  const startTimeStamp = sortedTimeStamps[sortedTimeStamps.length - 1];
+
+  return startTimeStamp - getHistoryStartDateFromDiffs(msDiffs);
 };
