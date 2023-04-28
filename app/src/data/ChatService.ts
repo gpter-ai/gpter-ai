@@ -1,17 +1,21 @@
+import { useContext } from 'react';
 import { ChatCompletionRequestMessage } from 'openai';
 import { StorageProvider } from '@/data/StorageProvider';
 import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
-import { MockApiService } from '@/api/mockApiService';
+// import { MockApiService } from '@/api/mockApiService';
 import { Chunk } from './types';
 import { assertNonNullable } from '@/utils/asserts';
 import { ChatMessage } from '@/components/types';
 import { getHistoryStartDateFromDiffs } from './historyHelper';
+import { OpenAiApiService } from '@/api/openaiApiService';
+import { UserConfigContext } from '@/context/UserConfig';
 
 export class ChatService {
-  #apiService: ApiService;
-
-  constructor(private storageProvider: StorageProvider) {
-    this.#apiService = new MockApiService();
+  constructor(
+    private storageProvider: StorageProvider,
+    private apiService: ApiService,
+  ) {
+    // this.#apiService = new MockApiService();
   }
 
   chatMessageToRequestMessage(
@@ -68,7 +72,7 @@ export class ChatService {
     const sessionStartDate = getHistoryStartDateFromDiffs(diffs);
 
     const messages = this.convertChunksToMessages(
-      chunks.filter((chunk) => chunk.timestamp > sessionStartDate),
+      chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),
     );
 
     return [promptMessage, ...messages];
@@ -92,7 +96,9 @@ export class ChatService {
     const processResponse = (response: ApiResponse): void => {
       // @TODO temp logic
       if (response.kind === ApiResponseType.Data) {
-        const chunkContent = response.data?.choices[0]?.message?.content ?? '';
+        // @TODO - it has to be delta, not messages. something's wrong with the typing
+        // @ts-ignore-line
+        const chunkContent = response.data?.choices[0]?.delta?.content ?? '';
 
         this.storageProvider.createChunk({
           content: chunkContent,
@@ -105,7 +111,7 @@ export class ChatService {
       }
     };
 
-    await this.#apiService.sendMessages(
+    await this.apiService.sendMessages(
       messages.map(this.chatMessageToRequestMessage),
       processResponse,
     );
@@ -117,5 +123,9 @@ export const useChatService = (
 ): {
   chatService: ChatService;
 } => {
-  return { chatService: new ChatService(storageProvider) };
+  const { userConfig } = useContext(UserConfigContext);
+
+  const apiService = new OpenAiApiService(userConfig?.apiKey ?? '');
+
+  return { chatService: new ChatService(storageProvider, apiService) };
 };
