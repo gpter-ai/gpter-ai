@@ -24,8 +24,7 @@ export class MockApiService implements ApiService {
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
   ): Promise<void> {
-    console.log('SENDING FOLLOWING MESSAGES', messages);
-
+    console.log('sending following messages', messages);
     let index = 0;
     const intervalId = setInterval(() => {
       if (index >= SAMPLE_MESSAGE.length) {

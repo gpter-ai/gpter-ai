@@ -5,7 +5,6 @@ import {
   CreateChatCompletionResponse,
 } from 'openai';
 import {
-  API_KEY,
   BASE_OPENAI_URL,
   DATA_STREAM_DONE_INDICATOR,
   OPENAI_MODEL,
@@ -13,6 +12,8 @@ import {
 import { ApiResponse, ApiResponseType, ApiService } from './types';
 
 export class OpenAiApiService implements ApiService {
+  constructor(private apiKey: string) {}
+
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
@@ -24,7 +25,7 @@ export class OpenAiApiService implements ApiService {
     };
 
     const headers = {
-      authorization: `Bearer ${API_KEY}`,
+      authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
     };
 

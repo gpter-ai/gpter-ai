@@ -5,3 +5,5 @@ export const OPENAI_API_KEY_PATTERN = /sk-\w{40,50}/;
 export const DEFAULT_MAX_TOKENS = 120;
 
 export const TOKENS_HARD_LIMIT = 2048;
+
+export const MAX_MESSAGES_PER_CHAT_PAGE = 5;

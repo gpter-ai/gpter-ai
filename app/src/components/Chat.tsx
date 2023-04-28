@@ -9,8 +9,7 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import { ChatCompletionRequestMessage } from 'openai';
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
@@ -18,6 +17,9 @@ import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
 import { useChatService } from '@/data/ChatService';
+import ChatCards from './ChatCards/ChatCards';
+import { ChatMessage } from './types';
+import { getHistoryStartDateFromDiffs } from '@/data/historyHelper';
 
 type Props = {
   assistant: Assistant;
@@ -27,6 +29,8 @@ type Props = {
 const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyStartTimestamp, setHistoryStartTimestamp] = useState(0);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
@@ -34,18 +38,29 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const storageProvider = useStorageProvider();
   const { chatService } = useChatService(storageProvider);
 
-  const fetchHistory = (): Promise<ChatCompletionRequestMessage[]> => {
+  const fetchHistory = (): Promise<ChatMessage[]> => {
+    setLoadingHistory(true);
     return storageProvider
       .getChunksByAssistant(assistant.id)
       .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
-      .then(chatService.convertChunksToMessages);
+      .then(chatService.convertChunksToMessages)
+      .finally(() => setLoadingHistory(false));
   };
 
-  const history: ChatCompletionRequestMessage[] = useLiveQuery(
+  const history: ChatMessage[] = useLiveQuery(
     fetchHistory,
     [storageProvider, assistant.id],
     [],
   );
+
+  // @TODO - auto update at interval?
+  useEffect(() => {
+    const diffs = [...history]
+      .reverse()
+      .map((message) => Date.now() - message.timestamp);
+
+    setHistoryStartTimestamp(getHistoryStartDateFromDiffs(diffs));
+  }, [history.length]);
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
@@ -115,10 +130,10 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     >
       <div ref={containerRef}>
         <SpaceBetween size="m" direction="vertical">
-          <Textarea
-            value={history.map((m) => `${m.role}: ${m.content}`).join('\n\n')}
-            rows={10}
-            disabled
+          <ChatCards
+            historyStartTs={historyStartTimestamp}
+            loading={loadingHistory}
+            messages={history}
           />
           <FormField errorText={inputError} stretch label="Type a query">
             <Textarea
