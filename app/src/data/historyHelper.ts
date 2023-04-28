@@ -36,7 +36,7 @@ export const getHistoryStartDateFromDiffs = (msDiffs: number[]): number => {
     if (diffDelta > historyDiff) return prevDiff;
   }
 
-  return msDiffs[msDiffs.length - 1];
+  return Date.now() - msDiffs[msDiffs.length - 1];
 };
 
 export const getHistoryStartDateFromTimeStamps = (

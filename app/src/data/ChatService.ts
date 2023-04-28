@@ -4,6 +4,8 @@ import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
 import { MockApiService } from '@/api/mockApiService';
 import { Chunk } from './types';
 import { assertNonNullable } from '@/utils/asserts';
+import { ChatMessage } from '@/components/types';
+import { getHistoryStartDateFromDiffs } from './historyHelper';
 
 export class ChatService {
   #apiService: ApiService;
@@ -12,12 +14,18 @@ export class ChatService {
     this.#apiService = new MockApiService();
   }
 
-  convertChunksToMessages(chunks: Chunk[]): ChatCompletionRequestMessage[] {
-    if (chunks.length === 0) return [];
-    const messages: ChatCompletionRequestMessage[] = [];
+  chatMessageToRequestMessage(
+    chatMessage: ChatMessage,
+  ): ChatCompletionRequestMessage {
+    const { role, content } = chatMessage;
+    return { role, content };
+  }
 
-    let currentMessage: ChatCompletionRequestMessage =
-      {} as ChatCompletionRequestMessage;
+  convertChunksToMessages(chunks: Chunk[]): ChatMessage[] {
+    if (chunks.length === 0) return [];
+    const messages: ChatMessage[] = [];
+
+    let currentMessage: ChatMessage = {} as ChatMessage;
 
     for (const chunk of chunks) {
       // @TODO - here we trust that a chunk with a role is always the first chunk of a message
@@ -25,7 +33,11 @@ export class ChatService {
         if (currentMessage.role && currentMessage.content) {
           messages.push(currentMessage);
         }
-        currentMessage = { role: chunk.role, content: chunk.content ?? '' };
+        currentMessage = {
+          role: chunk.role,
+          content: chunk.content ?? '',
+          timestamp: chunk.timestamp,
+        };
       } else {
         currentMessage.content += chunk.content ?? '';
       }
@@ -36,29 +48,28 @@ export class ChatService {
     return messages;
   }
 
-  async completeMessageHistory(
-    assistantId: string,
-  ): Promise<ChatCompletionRequestMessage[]> {
+  async getSessionHistory(assistantId: string): Promise<ChatMessage[]> {
     const assistant = await this.storageProvider.getAssistant(assistantId);
 
     assertNonNullable(assistant);
 
-    const promptMessage: ChatCompletionRequestMessage = {
+    const promptMessage: ChatMessage = {
       role: 'system',
       content: assistant.prompt,
+      timestamp: Number(assistant.creation_date) ?? 0,
     };
 
-    // @TODO - implement more sophisticated logic (exponential reduce)
-    const timestampDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+    const chunks = await this.storageProvider
+      .getChunksByAssistant(assistantId)
+      .then((result) => result.sort((a, b) => a.timestamp - b.timestamp));
 
-    const messages = await this.storageProvider
-      .getChunksByFilter(
-        (chunk) =>
-          chunk.assistantId === assistantId &&
-          chunk.timestamp > timestampDayAgo,
-      )
-      .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
-      .then(this.convertChunksToMessages);
+    const diffs = chunks.map((chunk) => Date.now() - chunk.timestamp);
+
+    const sessionStartDate = getHistoryStartDateFromDiffs(diffs);
+
+    const messages = this.convertChunksToMessages(
+      chunks.filter((chunk) => chunk.timestamp > sessionStartDate),
+    );
 
     return [promptMessage, ...messages];
   }
@@ -76,7 +87,7 @@ export class ChatService {
 
     await this.storageProvider.createChunk(chunkData);
 
-    const messages = await this.completeMessageHistory(assistantId);
+    const messages = await this.getSessionHistory(assistantId);
 
     const processResponse = (response: ApiResponse): void => {
       // @TODO temp logic
@@ -87,12 +98,17 @@ export class ChatService {
           content: chunkContent,
           role: 'assistant',
           assistantId,
+          // @TODO - timestamp should not be in ms
+          // also concerns other places in the code
           timestamp: Date.now(),
         });
       }
     };
 
-    await this.#apiService.sendMessages(messages, processResponse);
+    await this.#apiService.sendMessages(
+      messages.map(this.chatMessageToRequestMessage),
+      processResponse,
+    );
   }
 }
 
