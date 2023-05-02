@@ -4,17 +4,18 @@
   color: lightgray;
 }
 
-.sessionBreakItem:before, .sessionBreakItem:after {
-  content: "";
+.sessionBreakItem:before,
+.sessionBreakItem:after {
+  content: '';
   flex: 1 1;
   border-bottom: 1px solid;
   margin: auto;
 }
 
 .sessionBreakItem:before {
-  margin-right: 10px
+  margin-right: 10px;
 }
 
 .sessionBreakItem:after {
-  margin-left: 10px
+  margin-left: 10px;
 }
