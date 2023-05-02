@@ -6,7 +6,7 @@ import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
 import { Chunk } from './types';
 import { assertNonNullable } from '@/utils/asserts';
 import { ChatMessage } from '@/components/types';
-import { getHistoryStartDateFromDiffs } from './historyHelper';
+import { getSessionStartDate } from './sessionHelper';
 import { OpenAiApiService } from '@/api/openaiApiService';
 import { UserConfigContext } from '@/context/UserConfig';
 
@@ -69,7 +69,7 @@ export class ChatService {
 
     const diffs = chunks.map((chunk) => Date.now() - chunk.timestamp);
 
-    const sessionStartDate = getHistoryStartDateFromDiffs(diffs);
+    const sessionStartDate = getSessionStartDate(diffs);
 
     const messages = this.convertChunksToMessages(
       chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),

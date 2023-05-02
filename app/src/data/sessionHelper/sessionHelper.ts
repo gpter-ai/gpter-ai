@@ -5,7 +5,7 @@ import {
   minutesToMs,
 } from '@/utils/dateTimeUtils';
 
-const HISTORY_STEPS = aggregateIntervals([
+const SESSION_STEPS = aggregateIntervals([
   daysToMs(1),
   minutesToMs(60),
   minutesToMs(30),
@@ -18,28 +18,24 @@ const HISTORY_STEPS = aggregateIntervals([
   minutesToMs(1),
 ]);
 
-export const getHistoryStartTimestamp = (): number => {
-  return Date.now() - HISTORY_STEPS[0];
-};
-
-export const getHistoryStartDateFromDiffs = (msDiffs: number[]): number => {
+export const getSessionStartDeltaFromDiffs = (msDiffs: number[]): number => {
   if (msDiffs.length === 0) return 0;
 
   for (let i = 0; i < msDiffs.length; i++) {
     const prevDiff = msDiffs[i - 1] ?? 0;
-    if (i > HISTORY_STEPS.length) return prevDiff;
+    if (i > SESSION_STEPS.length) return prevDiff;
     const currentDiff = msDiffs[i];
-    const maxDiff = HISTORY_STEPS[i];
+    const maxDiff = SESSION_STEPS[i];
     if (currentDiff > maxDiff) return prevDiff;
     const diffDelta = currentDiff - prevDiff;
-    const historyDiff = maxDiff - HISTORY_STEPS[i - 1];
+    const historyDiff = maxDiff - SESSION_STEPS[i - 1];
     if (diffDelta > historyDiff) return prevDiff;
   }
 
-  return Date.now() - msDiffs[msDiffs.length - 1];
+  return msDiffs[msDiffs.length - 1];
 };
 
-export const getHistoryStartDateFromTimeStamps = (
+export const getSessionStartDateFromTimeStamps = (
   timeStamps: number[],
 ): number => {
   const sortedTimeStamps = orderBy(timeStamps);
@@ -49,5 +45,9 @@ export const getHistoryStartDateFromTimeStamps = (
   }
   const startTimeStamp = sortedTimeStamps[sortedTimeStamps.length - 1];
 
-  return startTimeStamp - getHistoryStartDateFromDiffs(msDiffs);
+  return startTimeStamp - getSessionStartDeltaFromDiffs(msDiffs);
+};
+
+export const getSessionStartDate = (timeStamps: number[]): number => {
+  return Date.now() - getSessionStartDateFromTimeStamps(timeStamps);
 };

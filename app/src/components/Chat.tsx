@@ -19,7 +19,7 @@ import DangerModal from './DangerModal';
 import { useChatService } from '@/data/ChatService';
 import ChatCards from './ChatCards/ChatCards';
 import { ChatMessage } from './types';
-import { getHistoryStartDateFromDiffs } from '@/data/historyHelper';
+import { getSessionStartDate } from '@/data/sessionHelper';
 
 type Props = {
   assistant: Assistant;
@@ -59,7 +59,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
       .reverse()
       .map((message) => Date.now() - message.timestamp);
 
-    setHistoryStartTimestamp(getHistoryStartDateFromDiffs(diffs));
+    setHistoryStartTimestamp(getSessionStartDate(diffs));
   }, [history.length]);
 
   const onValueChange = (

@@ -1,7 +1,7 @@
 import {
-  getHistoryStartDateFromDiffs,
-  getHistoryStartDateFromTimeStamps,
-} from './historyHelper';
+  getSessionStartDateFromTimeStamps,
+  getSessionStartDeltaFromDiffs,
+} from './sessionHelper';
 import {
   aggregateIntervals,
   daysToMs,
@@ -13,7 +13,7 @@ interface TestCase {
   expected: number;
 }
 
-describe('getHistoryStartDate', () => {
+describe('Session Helper', () => {
   const testCases: TestCase[] = [
     {
       input: [daysToMs(2), minutesToMs(5), minutesToMs(25)],
@@ -53,7 +53,7 @@ describe('getHistoryStartDate', () => {
 
   testCases.forEach(({ input, expected }) => {
     it(`should return expected value for: ${JSON.stringify(input)}`, () => {
-      const historyStartDate = getHistoryStartDateFromDiffs(
+      const historyStartDate = getSessionStartDeltaFromDiffs(
         aggregateIntervals(input),
       );
       expect(historyStartDate).toEqual(expected);
@@ -63,7 +63,7 @@ describe('getHistoryStartDate', () => {
   describe('getHistoryStartDateFromTimeStamps', () => {
     it('should return expected value', () => {
       const testDate = Date.now();
-      const historyStartDate = getHistoryStartDateFromTimeStamps([
+      const historyStartDate = getSessionStartDateFromTimeStamps([
         testDate - daysToMs(1),
         testDate - daysToMs(1) - minutesToMs(60),
         testDate - daysToMs(1) - minutesToMs(60) - minutesToMs(60),
