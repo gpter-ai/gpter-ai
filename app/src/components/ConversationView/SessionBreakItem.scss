@@ -1,0 +1,20 @@
+.sessionBreakItem {
+  display: flex;
+  flex-direction: row;
+  color: lightgray;
+}
+
+.sessionBreakItem:before, .sessionBreakItem:after {
+  content: "";
+  flex: 1 1;
+  border-bottom: 1px solid;
+  margin: auto;
+}
+
+.sessionBreakItem:before {
+  margin-right: 10px
+}
+
+.sessionBreakItem:after {
+  margin-left: 10px
+}
