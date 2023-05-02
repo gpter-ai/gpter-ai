@@ -1,5 +1,5 @@
 import React, { CSSProperties } from 'react';
-import { Box, Container } from '@cloudscape-design/components';
+import { Box, Container, SpaceBetween } from '@cloudscape-design/components';
 import { ChatMessage } from '@/components/types';
 import './MessageItem.scss';
 
@@ -17,9 +17,14 @@ export const MessageItem: React.FC<Props> = ({ message }) => {
     <div className="messageItemContent" style={alignRightStyle}>
       <Container
         header={
-          <Box fontWeight="bold" color={fontColor}>
-            {header}
-          </Box>
+          <SpaceBetween size="m" direction="horizontal">
+            <Box fontWeight="bold" color={fontColor}>
+              {header}
+            </Box>
+            <Box color="text-status-inactive">
+              {new Date(message.timestamp).toLocaleString()}
+            </Box>
+          </SpaceBetween>
         }
       >
         <Box>{content}</Box>
