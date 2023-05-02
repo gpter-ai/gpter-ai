@@ -5,6 +5,7 @@ import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
 // import { MockApiService } from '@/api/mockApiService';
 import { Chunk } from './types';
 import { assertNonNullable } from '@/utils/asserts';
+// TODO remove import from components
 import { ChatMessage } from '@/components/types';
 import { getSessionStartDate } from './sessionHelper';
 import { OpenAiApiService } from '@/api/openaiApiService';

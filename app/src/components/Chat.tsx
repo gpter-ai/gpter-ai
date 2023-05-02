@@ -7,9 +7,10 @@ import {
   InputProps,
   NonCancelableCustomEvent,
   SpaceBetween,
+  Spinner,
   Textarea,
 } from '@cloudscape-design/components';
-import { FC, useEffect, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
@@ -17,9 +18,8 @@ import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
 import { useChatService } from '@/data/ChatService';
-import ChatCards from './ChatCards/ChatCards';
 import { ChatMessage } from './types';
-import { getSessionStartDate } from '@/data/sessionHelper';
+import { ConversationView } from '@/components/ConversationView';
 
 type Props = {
   assistant: Assistant;
@@ -30,7 +30,6 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [historyStartTimestamp, setHistoryStartTimestamp] = useState(0);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
@@ -53,14 +52,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     [],
   );
 
-  // @TODO - auto update at interval?
-  useEffect(() => {
-    const diffs = [...history]
-      .reverse()
-      .map((message) => Date.now() - message.timestamp);
-
-    setHistoryStartTimestamp(getSessionStartDate(diffs));
-  }, [history.length]);
+  const needShowSpinner = loadingHistory && history.length === 0;
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
@@ -130,11 +122,12 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     >
       <div ref={containerRef}>
         <SpaceBetween size="m" direction="vertical">
-          <ChatCards
-            historyStartTs={historyStartTimestamp}
-            loading={loadingHistory}
-            messages={history}
-          />
+          {needShowSpinner && (
+            <Box textAlign="center">
+              <Spinner size="large" />;
+            </Box>
+          )}
+          {!needShowSpinner && <ConversationView messages={history} />}
           <FormField errorText={inputError} stretch label="Type a query">
             <Textarea
               value={text}
