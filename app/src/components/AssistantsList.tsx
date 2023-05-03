@@ -44,9 +44,15 @@ const AssistantsList: FC<Props> = ({
             </Button>
           </div>
         ))}
-        <Button iconName="add-plus" onClick={onNewAssistantClick}>
-          Create New Assistant
-        </Button>
+        <div className="assistantsListButtonWrapper">
+          <Button
+            iconName="add-plus"
+            onClick={onNewAssistantClick}
+            variant="link"
+          >
+            Create New Assistant
+          </Button>
+        </div>
       </SpaceBetween>
     </Container>
   );
