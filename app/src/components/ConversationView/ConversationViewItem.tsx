@@ -7,7 +7,7 @@ interface Props {
   content: ChatItem;
 }
 
-const shouldRerender = (
+const propsAreEqual = (
   { content: prevContent }: Props,
   { content: nextContent }: Props,
 ): boolean => {
@@ -15,8 +15,10 @@ const shouldRerender = (
     return false;
   }
 
-  if (prevContent.type === ChatItemType.Message) {
-    // @ts-ignore-line
+  if (
+    prevContent.type === ChatItemType.Message &&
+    nextContent.type === ChatItemType.Message
+  ) {
     return prevContent.message.content === nextContent.message.content;
   }
 
@@ -32,4 +34,4 @@ export const ConversationViewItem: React.FC<Props> = memo(({ content }) => {
   }
 
   throw new Error(`Unknown chat item type: ${JSON.stringify(content)}`);
-}, shouldRerender);
+}, propsAreEqual);
