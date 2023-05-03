@@ -111,11 +111,7 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   return (
     <Container
       header={
-        <Header
-          actions={headerActions}
-          variant="h2"
-          description={`Prompt: ${assistant.prompt}`}
-        >
+        <Header actions={headerActions} variant="h2">
           {assistant.name}
         </Header>
       }
