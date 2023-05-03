@@ -9,7 +9,7 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import React, { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
@@ -27,6 +27,7 @@ type Props = {
 const Chat: FC<Props> = ({ assistant }) => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
+  const [inputDisabled, setInputDisabled] = useState(false);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
@@ -37,7 +38,6 @@ const Chat: FC<Props> = ({ assistant }) => {
   const fetchHistory = (): Promise<ChatMessage[]> => {
     return storageProvider
       .getChunksByAssistant(assistant.id)
-      .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
       .then(chatService.convertChunksToMessages);
   };
 
@@ -46,6 +46,19 @@ const Chat: FC<Props> = ({ assistant }) => {
     [storageProvider, assistant.id],
     [],
   );
+
+  useEffect(() => {
+    const lastMessage = history.at(-1);
+
+    setInputDisabled(
+      !!(
+        lastMessage &&
+        lastMessage.role === 'assistant' &&
+        !lastMessage.finished
+      ),
+    );
+  }, [history, assistant.id]);
+
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
   ): void => {
@@ -120,10 +133,15 @@ const Chat: FC<Props> = ({ assistant }) => {
               onChange={onValueChange}
               rows={textAreaRowCount}
               autoFocus
+              disabled={inputDisabled}
             />
           </FormField>
           <Box textAlign="right">
-            <Button variant="primary" onClick={onMessageSubmit}>
+            <Button
+              disabled={inputDisabled}
+              variant="primary"
+              onClick={onMessageSubmit}
+            >
               Submit
             </Button>
           </Box>

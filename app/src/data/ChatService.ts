@@ -1,9 +1,10 @@
 import { useContext } from 'react';
+import Dexie from 'dexie';
 import { ChatCompletionRequestMessage } from 'openai';
 import { StorageProvider } from '@/data/StorageProvider';
 import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
 // import { MockApiService } from '@/api/mockApiService';
-import { Chunk } from './types';
+import { Chunk, ChunkContentKind } from './types';
 import { assertNonNullable } from '@/utils/asserts';
 // TODO remove import from components
 import { ChatMessage } from '@/components/types';
@@ -29,27 +30,32 @@ export class ChatService {
 
   convertChunksToMessages(chunks: Chunk[]): ChatMessage[] {
     if (chunks.length === 0) return [];
+    chunks.sort((a, b) => a.timestamp - b.timestamp);
     const messages: ChatMessage[] = [];
 
-    let currentMessage: ChatMessage = {} as ChatMessage;
+    let currentMessage = {
+      content: '',
+      finished: false,
+    } as ChatMessage;
 
     for (const chunk of chunks) {
-      // @TODO - here we trust that a chunk with a role is always the first chunk of a message
-      if (chunk.role && chunk.role !== currentMessage.role) {
-        if (currentMessage.role && currentMessage.content) {
-          messages.push(currentMessage);
-        }
-        currentMessage = {
-          role: chunk.role,
-          content: chunk.content ?? '',
-          timestamp: chunk.timestamp,
-        };
+      if (chunk.content.kind === ChunkContentKind.DATA) {
+        currentMessage.content += chunk.content.message;
+        currentMessage.timestamp = chunk.timestamp;
+        currentMessage.role = chunk.role;
       } else {
-        currentMessage.content += chunk.content ?? '';
+        currentMessage.finished = true;
+        messages.push(currentMessage);
+        currentMessage = {
+          content: '',
+          finished: false,
+        } as ChatMessage;
       }
     }
 
-    messages.push(currentMessage);
+    if (currentMessage.content.length > 0) {
+      messages.push(currentMessage);
+    }
 
     return messages;
   }
@@ -63,6 +69,7 @@ export class ChatService {
       role: 'system',
       content: assistant.prompt,
       timestamp: Number(assistant.creation_date) ?? 0,
+      finished: true,
     };
 
     const chunks = await this.storageProvider
@@ -85,36 +92,63 @@ export class ChatService {
     message: string,
     assistantId: string,
   ): Promise<void> {
-    const chunkData: Omit<Chunk, 'id'> = {
-      content: message,
+    const userMessageChunk: Omit<Chunk, 'id'> = {
+      content: { message, kind: ChunkContentKind.DATA },
       role: 'user',
       assistantId,
       timestamp: Date.now(),
     };
 
-    await this.storageProvider.createChunk(chunkData);
+    const userDoneChunk: Omit<Chunk, 'id'> = {
+      content: { kind: ChunkContentKind.DONE },
+      role: 'user',
+      assistantId,
+      timestamp: Date.now() + 1,
+    };
+
+    await this.storageProvider.createChunk(userMessageChunk);
+    await this.storageProvider.createChunk(userDoneChunk);
 
     const messages = await this.getSessionHistory(assistantId);
 
-    const processResponse = (response: ApiResponse): void => {
-      // @TODO temp logic
-      if (response.kind === ApiResponseType.Data) {
-        const chunkContent = response.data?.choices[0]?.delta?.content ?? '';
+    const processAbort = async (messageIndex: number): Promise<void> => {
+      Dexie.currentTransaction && Dexie.currentTransaction.abort();
 
+      await this.storageProvider.createChunk({
+        content: { kind: ChunkContentKind.DONE },
+        role: 'assistant',
+        assistantId,
+        timestamp: Date.now() + messageIndex,
+      });
+    };
+
+    const processResponse = (response: ApiResponse): void => {
+      // @TODO - consider using finish reason instead
+      if (response.kind === ApiResponseType.Done) {
         this.storageProvider.createChunk({
-          content: chunkContent,
+          content: { kind: ChunkContentKind.DONE },
           role: 'assistant',
           assistantId,
-          // @TODO - timestamp should not be in ms
-          // also concerns other places in the code
-          timestamp: Date.now(),
+          timestamp: Date.now() + response.messageIndex,
         });
+        return;
       }
+
+      this.storageProvider.createChunk({
+        role: 'assistant',
+        assistantId,
+        timestamp: Date.now() + response.messageIndex,
+        content: {
+          kind: ChunkContentKind.DATA,
+          message: response.data.choices[0]?.delta?.content ?? '',
+        },
+      });
     };
 
     await this.apiService.sendMessages(
       messages.map(this.chatMessageToRequestMessage),
       processResponse,
+      processAbort,
     );
   }
 }
