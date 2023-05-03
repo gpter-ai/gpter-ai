@@ -20,9 +20,12 @@
     "react/no-array-index-key": "off",
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-non-null-assertion": "error",
-    "@typescript-eslint/explicit-function-return-type": ["error", {
-      "allowExpressions": true
-    }],
+    "@typescript-eslint/explicit-function-return-type": [
+      "error",
+      {
+        "allowExpressions": true
+      }
+    ],
     "prettier/prettier": "error",
     "react/jsx-newline": [
       "error",
@@ -31,6 +34,7 @@
         "allowMultilines": false
       }
     ],
+    "react/prop-types": "off",
     "import/prefer-default-export": "off",
     "import/extensions": "off",
     "import/no-extraneous-dependencies": "off",
