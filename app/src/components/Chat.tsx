@@ -52,8 +52,6 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     [],
   );
 
-  const needShowSpinner = loadingHistory && history.length === 0;
-
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
   ): void => {
@@ -108,6 +106,11 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
     await chatService.onMessageSubmit(`${text}`, assistant.id);
   };
 
+  const isEmptyState = history.length === 0;
+  const needShowSpinner = loadingHistory && isEmptyState;
+  const renderConversation = !loadingHistory && !isEmptyState;
+  const textAreaRowCount = renderConversation ? 2 : 20;
+
   return (
     <Container
       header={
@@ -123,12 +126,12 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
               <Spinner size="large" />;
             </Box>
           )}
-          {!needShowSpinner && <ConversationView messages={history} />}
+          {renderConversation && <ConversationView messages={history} />}
           <FormField errorText={inputError} stretch label="Type a query">
             <Textarea
               value={text}
               onChange={onValueChange}
-              rows={1}
+              rows={textAreaRowCount}
               autoFocus
             />
           </FormField>
