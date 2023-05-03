@@ -7,7 +7,6 @@ import {
   InputProps,
   NonCancelableCustomEvent,
   SpaceBetween,
-  Spinner,
   Textarea,
 } from '@cloudscape-design/components';
 import React, { FC, useState } from 'react';
@@ -28,7 +27,6 @@ type Props = {
 const Chat: FC<Props> = ({ assistant }) => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
@@ -37,12 +35,10 @@ const Chat: FC<Props> = ({ assistant }) => {
   const { chatService } = useChatService(storageProvider);
 
   const fetchHistory = (): Promise<ChatMessage[]> => {
-    setLoadingHistory(true);
     return storageProvider
       .getChunksByAssistant(assistant.id)
       .then((chunks) => chunks.sort((a, b) => a.timestamp - b.timestamp))
-      .then(chatService.convertChunksToMessages)
-      .finally(() => setLoadingHistory(false));
+      .then(chatService.convertChunksToMessages);
   };
 
   const history: ChatMessage[] = useLiveQuery(
@@ -50,7 +46,6 @@ const Chat: FC<Props> = ({ assistant }) => {
     [storageProvider, assistant.id],
     [],
   );
-
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
   ): void => {
@@ -105,8 +100,7 @@ const Chat: FC<Props> = ({ assistant }) => {
   };
 
   const isEmptyState = history.length === 0;
-  const needShowSpinner = loadingHistory && isEmptyState;
-  const renderConversation = !loadingHistory && !isEmptyState;
+  const renderConversation = !isEmptyState;
   const textAreaRowCount = renderConversation ? 2 : 20;
 
   return (
@@ -119,11 +113,6 @@ const Chat: FC<Props> = ({ assistant }) => {
     >
       <div ref={containerRef}>
         <SpaceBetween size="m" direction="vertical">
-          {needShowSpinner && (
-            <Box textAlign="center">
-              <Spinner size="large" />;
-            </Box>
-          )}
           {renderConversation && <ConversationView messages={history} />}
           <FormField errorText={inputError} stretch label="Type a query">
             <Textarea

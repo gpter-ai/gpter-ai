@@ -13,6 +13,7 @@ export const MessageItem: React.FC<Props> = ({ message }) => {
   const header = role === 'user' ? 'You' : 'Assistant';
   const fontColor = role === 'user' ? 'inherit' : 'text-status-info';
   const alignRightStyle: CSSProperties = alignRight ? { float: 'right' } : {};
+
   return (
     <div className="messageItemContent" style={alignRightStyle}>
       <Container

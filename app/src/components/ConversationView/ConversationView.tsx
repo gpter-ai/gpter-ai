@@ -12,8 +12,8 @@ interface Props {
 
 export const ConversationView: React.FC<Props> = ({ messages }) => {
   const itemsToRender = chatMessagesToChatItems(messages);
-  const lastMessage = messages.findLast(() => true)?.content.length ?? '';
-  const ref = useAutoScrollToBottom([messages.length, lastMessage]);
+  const lastMessageLength = messages.at(-1)?.content?.length ?? 0;
+  const ref = useAutoScrollToBottom([messages.length, lastMessageLength]);
 
   return (
     <div ref={ref} className="conversationView">

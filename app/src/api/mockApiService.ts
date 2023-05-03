@@ -1,7 +1,7 @@
 import { ChatCompletionRequestMessage } from 'openai';
 import { ApiResponse, ApiResponseType, ApiService } from './types';
 
-const POSTFIX = new Array(100).fill(0).map((x, i) => `Item ${i},`);
+const POSTFIX = new Array(10).fill(0).map((x, i) => `Item ${i},`);
 
 const SAMPLE_MESSAGE = [
   'Hello!',

@@ -3,7 +3,7 @@ import { DependencyList, MutableRefObject, useEffect, useRef } from 'react';
 type Ref = MutableRefObject<HTMLDivElement | null>;
 
 export const useAutoScrollToBottom = (deps: DependencyList): Ref => {
-  const ref = useRef<HTMLDivElement>();
+  const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!ref.current) return;
 
@@ -11,5 +11,5 @@ export const useAutoScrollToBottom = (deps: DependencyList): Ref => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 
-  return ref as Ref;
+  return ref;
 };

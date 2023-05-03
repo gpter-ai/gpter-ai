@@ -119,7 +119,7 @@ export class ChatService {
   }
 }
 
-const USE_MOCK_API = false;
+const USE_MOCK_API = true;
 
 export const useChatService = (
   storageProvider: StorageProvider,
