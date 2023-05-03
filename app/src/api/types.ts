@@ -2,6 +2,10 @@ import {
   ChatCompletionRequestMessage,
   CreateChatCompletionResponse,
 } from 'openai';
+import {
+  ChatCompletionResponseMessage,
+  CreateChatCompletionResponseChoicesInner,
+} from 'openai/api';
 
 export interface ApiService {
   sendMessages(
@@ -21,7 +25,14 @@ export interface ApiResponseFinish {
 
 export interface ApiResponseData {
   kind: ApiResponseType.Data;
-  data: CreateChatCompletionResponse;
+  // TODO: fix types properly
+  data: Omit<CreateChatCompletionResponse, 'choices'> & {
+    choices: Array<
+      Omit<CreateChatCompletionResponseChoicesInner, 'message'> & {
+        delta: ChatCompletionResponseMessage;
+      }
+    >;
+  };
 }
 
 export type ApiResponse = ApiResponseFinish | ApiResponseData;

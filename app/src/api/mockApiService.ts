@@ -47,7 +47,7 @@ export class MockApiService implements ApiService {
         id: '123',
         choices: [
           {
-            message: {
+            delta: {
               content: SAMPLE_MESSAGE[index],
               role: 'assistant',
             },

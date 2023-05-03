@@ -68,9 +68,10 @@ export class ChatService {
       .getChunksByAssistant(assistantId)
       .then((result) => result.sort((a, b) => a.timestamp - b.timestamp));
 
-    const diffs = chunks.map((chunk) => Date.now() - chunk.timestamp);
-
-    const sessionStartDate = getSessionStartDate(diffs);
+    const timeStamps = chunks
+      .filter((x) => x.role === 'user')
+      .map((chunk) => chunk.timestamp);
+    const sessionStartDate = getSessionStartDate(timeStamps);
 
     const messages = this.convertChunksToMessages(
       chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),
@@ -97,8 +98,6 @@ export class ChatService {
     const processResponse = (response: ApiResponse): void => {
       // @TODO temp logic
       if (response.kind === ApiResponseType.Data) {
-        // @TODO - it has to be delta, not messages. something's wrong with the typing
-        // @ts-ignore-line
         const chunkContent = response.data?.choices[0]?.delta?.content ?? '';
 
         this.storageProvider.createChunk({
