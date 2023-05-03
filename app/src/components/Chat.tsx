@@ -23,10 +23,9 @@ import { ConversationView } from '@/components/ConversationView';
 
 type Props = {
   assistant: Assistant;
-  chooseSelectedAssistant: () => void;
 };
 
-const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
+const Chat: FC<Props> = ({ assistant }) => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -82,7 +81,6 @@ const Chat: FC<Props> = ({ assistant, chooseSelectedAssistant }) => {
   const removeAssistant = async (): Promise<void> => {
     await storageProvider.deleteAssistant(assistant.id);
     setRemovalModalVisible(false);
-    chooseSelectedAssistant();
   };
 
   const headerActions = (

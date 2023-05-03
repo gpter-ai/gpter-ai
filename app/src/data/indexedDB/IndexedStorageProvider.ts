@@ -22,12 +22,18 @@ export class IndexedStorageProvider implements StorageProvider {
 
   createAssistant(data: AssistantFormFields): void {
     // @TODO - think about building in validation layer
-    this.#db.assistants.add({ ...data, id: generateUUID() });
+    this.#db.assistants.add({
+      ...data,
+      id: generateUUID(),
+    });
   }
 
   createChunk(data: Omit<Chunk, 'id'>): void {
     // @TODO - think about building in validation layer
-    this.#db.chunks.add({ ...data, id: generateUUID() });
+    this.#db.chunks.add({
+      ...data,
+      id: generateUUID(),
+    });
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {
@@ -37,10 +43,6 @@ export class IndexedStorageProvider implements StorageProvider {
   async deleteAssistant(key: string): Promise<void> {
     await this.#db.chunks.where({ assistantId: key }).delete();
     await this.#db.assistants.delete(key);
-  }
-
-  async getDefaultAssistantId(): Promise<Nullable<string>> {
-    return (await this.#db.assistants.get(0))?.id ?? null;
   }
 
   getChunksByAssistant(assistantId: string): Promise<Chunk[]> {

@@ -2,11 +2,11 @@ import ContentLayout from '@cloudscape-design/components/content-layout';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import { Box, Button, Grid, GridProps } from '@cloudscape-design/components';
-import { FC, useCallback, useContext, useEffect, useState } from 'react';
+import { FC, useContext, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import AssistantsList from './AssistantsList';
 import Chat from './Chat';
-import { UserConfig } from '@/data/types';
+import { Assistant, UserConfig } from '@/data/types';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
@@ -28,20 +28,8 @@ const Content: FC = () => {
   const [selectedAssistantId, setSelectedAssistantId] =
     useState<Nullable<string>>();
 
-  const chooseSelectedAssistant = useCallback(async () => {
-    const id = await storageProvider.getDefaultAssistantId();
-    setSelectedAssistantId(id ?? assistants[0]?.id);
-  }, [storageProvider]);
-
-  const selectedAssistant = assistants.find(
-    (a) => a.id === selectedAssistantId,
-  );
-
-  console.log({ selectedAssistant, selectedAssistantId });
-
-  useEffect(() => {
-    chooseSelectedAssistant();
-  }, [chooseSelectedAssistant]);
+  const selectedAssistant: Nullable<Assistant> =
+    assistants.find((a) => a.id === selectedAssistantId) ?? assistants[0];
 
   useEffect(() => {
     if (!configLoading && !userConfig?.apiKey) {
@@ -50,7 +38,7 @@ const Content: FC = () => {
   }, [userConfig?.apiKey, configLoading]);
 
   const gridDefinition: ReadonlyArray<GridProps.ElementDefinition> =
-    selectedAssistantId
+    selectedAssistant
       ? [
           {
             colspan: {
@@ -111,15 +99,10 @@ const Content: FC = () => {
         <Grid gridDefinition={gridDefinition}>
           <AssistantsList
             onSelectedAssistantIdChange={setSelectedAssistantId}
-            selectedAssistantId={selectedAssistantId}
+            selectedAssistantId={selectedAssistant?.id}
             assistants={assistants}
           />
-          {selectedAssistant && (
-            <Chat
-              chooseSelectedAssistant={chooseSelectedAssistant}
-              assistant={selectedAssistant}
-            />
-          )}
+          {selectedAssistant && <Chat assistant={selectedAssistant} />}
         </Grid>
       </AssistantModalProvider>
       <ConfigModal
