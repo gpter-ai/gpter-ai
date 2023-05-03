@@ -1,7 +1,7 @@
 import { ChatCompletionRequestMessage } from 'openai';
 import { ApiResponse, ApiResponseType, ApiService } from './types';
 
-const POSTFIX = new Array(10).fill(0).map((x, i) => `Item ${i},`);
+const POSTFIX = new Array(100).fill(0).map((x, i) => `Item ${i},`);
 
 const SAMPLE_MESSAGE = [
   'Hello!',
@@ -32,7 +32,7 @@ export class MockApiService implements ApiService {
     const intervalId = setInterval(() => {
       if (index >= SAMPLE_MESSAGE.length) {
         clearInterval(intervalId);
-        onResponse({ kind: ApiResponseType.Done });
+        onResponse({ kind: ApiResponseType.Done, messageIndex: index });
       } else {
         onResponse(this.createDataResponse(index));
       }
@@ -42,6 +42,7 @@ export class MockApiService implements ApiService {
 
   private createDataResponse(index: number): ApiResponse {
     return {
+      messageIndex: index,
       kind: ApiResponseType.Data,
       data: {
         created: new Date().getDate(),
