@@ -39,10 +39,8 @@ export class IndexedStorageProvider implements StorageProvider {
     await this.#db.assistants.delete(key);
   }
 
-  getDefaultAssistant(): Promise<Nullable<Assistant>> {
-    return this.#db.assistants
-      .toArray()
-      .then((array) => (array.length ? array[0] : null));
+  async getDefaultAssistantId(): Promise<Nullable<string>> {
+    return (await this.#db.assistants.get(0))?.id ?? null;
   }
 
   getChunksByAssistant(assistantId: string): Promise<Chunk[]> {

@@ -3,28 +3,41 @@ import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import { Box, Button, Grid, GridProps } from '@cloudscape-design/components';
 import { FC, useCallback, useContext, useEffect, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import AssistantsList from './AssistantsList';
 import Chat from './Chat';
-import { Assistant, UserConfig } from '@/data/types';
+import { UserConfig } from '@/data/types';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
 import ConfigModal from './ConfigModal/ConfigModal';
 
-const Content: FC<{}> = () => {
+const Content: FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
   const storageProvider = useStorageProvider();
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
 
-  const [selectedAssistant, setSelectedAssistant] =
-    useState<Nullable<Assistant>>(null);
-
-  const chooseSelectedAssistant = useCallback(
-    () => storageProvider.getDefaultAssistant().then(setSelectedAssistant),
+  const assistants = useLiveQuery(
+    () => storageProvider.getAssistants(),
     [storageProvider],
+    [],
   );
+
+  const [selectedAssistantId, setSelectedAssistantId] =
+    useState<Nullable<string>>();
+
+  const chooseSelectedAssistant = useCallback(async () => {
+    const id = await storageProvider.getDefaultAssistantId();
+    setSelectedAssistantId(id ?? assistants[0]?.id);
+  }, [storageProvider]);
+
+  const selectedAssistant = assistants.find(
+    (a) => a.id === selectedAssistantId,
+  );
+
+  console.log({ selectedAssistant, selectedAssistantId });
 
   useEffect(() => {
     chooseSelectedAssistant();
@@ -37,9 +50,29 @@ const Content: FC<{}> = () => {
   }, [userConfig?.apiKey, configLoading]);
 
   const gridDefinition: ReadonlyArray<GridProps.ElementDefinition> =
-    selectedAssistant
-      ? [{ colspan: { default: 4, s: 3 } }, { colspan: { default: 8, s: 9 } }]
-      : [{ colspan: { default: 4, s: 3 } }];
+    selectedAssistantId
+      ? [
+          {
+            colspan: {
+              default: 4,
+              s: 3,
+            },
+          },
+          {
+            colspan: {
+              default: 8,
+              s: 9,
+            },
+          },
+        ]
+      : [
+          {
+            colspan: {
+              default: 4,
+              s: 3,
+            },
+          },
+        ];
 
   const onConfigModalConfirm = (config: Partial<UserConfig>): void => {
     // eslint-disable-next-line prefer-object-spread
@@ -76,7 +109,11 @@ const Content: FC<{}> = () => {
     >
       <AssistantModalProvider>
         <Grid gridDefinition={gridDefinition}>
-          <AssistantsList setSelectedAssistant={setSelectedAssistant} />
+          <AssistantsList
+            onSelectedAssistantIdChange={setSelectedAssistantId}
+            selectedAssistantId={selectedAssistantId}
+            assistants={assistants}
+          />
           {selectedAssistant && (
             <Chat
               chooseSelectedAssistant={chooseSelectedAssistant}

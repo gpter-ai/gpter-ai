@@ -1,25 +1,26 @@
 import { FC } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
-import { Box, Container } from '@cloudscape-design/components';
+import { Container } from '@cloudscape-design/components';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
+import './AssistantsList.scss';
+import { Nullable } from '@/types';
 
 type Props = {
-  setSelectedAssistant: (assistant: Assistant) => void;
+  onSelectedAssistantIdChange: (id: string) => void;
+  selectedAssistantId: Nullable<string>;
+  assistants: Assistant[];
 };
 
-const AssistantsList: FC<Props> = ({ setSelectedAssistant }) => {
+const AssistantsList: FC<Props> = ({
+  onSelectedAssistantIdChange,
+  selectedAssistantId,
+  assistants,
+}) => {
   const storageProvider = useStorageProvider();
   const assistantModal = useAssistantModal();
-
-  const assistants = useLiveQuery(
-    storageProvider.getAssistants.bind(storageProvider),
-    [storageProvider],
-    [],
-  );
 
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
     storageProvider.createAssistant(props);
@@ -32,11 +33,16 @@ const AssistantsList: FC<Props> = ({ setSelectedAssistant }) => {
     <Container>
       <SpaceBetween direction="vertical" size="m">
         {assistants.map((assistant) => (
-          <Box key={assistant.id}>
-            <Button onClick={(): void => setSelectedAssistant(assistant)}>
+          <div key={assistant.id} className="assistantsListButtonWrapper">
+            <Button
+              onClick={() => onSelectedAssistantIdChange(assistant.id)}
+              variant={
+                assistant.id === selectedAssistantId ? 'primary' : 'normal'
+              }
+            >
               {assistant.name}
             </Button>
-          </Box>
+          </div>
         ))}
         <Button iconName="add-plus" onClick={onNewAssistantClick}>
           Create New Assistant
