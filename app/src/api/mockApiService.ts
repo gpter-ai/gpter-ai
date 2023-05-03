@@ -1,22 +1,25 @@
 import { ChatCompletionRequestMessage } from 'openai';
 import { ApiResponse, ApiResponseType, ApiService } from './types';
 
+const POSTFIX = new Array(100).fill(0).map((x, i) => `Item ${i},`);
+
 const SAMPLE_MESSAGE = [
-  'Hello! ',
-  'How ',
-  'are ',
-  'you ',
-  'doing? ',
-  'I ',
-  'am ',
-  'a ',
-  'human ',
-  'and ',
-  '- ',
-  'am ',
-  'not ',
-  'a ',
+  'Hello!',
+  'How',
+  'are',
+  'you',
+  'doing?',
+  'I',
+  'am',
+  'a',
+  'human',
+  'and',
+  '-',
+  'am',
+  'not',
+  'a',
   'robot!',
+  ...POSTFIX,
 ];
 
 export class MockApiService implements ApiService {
@@ -34,7 +37,7 @@ export class MockApiService implements ApiService {
         onResponse(this.createDataResponse(index));
       }
       index += 1;
-    }, 500);
+    }, 50);
   }
 
   private createDataResponse(index: number): ApiResponse {
@@ -48,7 +51,7 @@ export class MockApiService implements ApiService {
         choices: [
           {
             delta: {
-              content: SAMPLE_MESSAGE[index],
+              content: `${SAMPLE_MESSAGE[index]} `,
               role: 'assistant',
             },
           },

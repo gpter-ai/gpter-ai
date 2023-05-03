@@ -10,6 +10,7 @@ import { ChatMessage } from '@/components/types';
 import { getSessionStartDate } from './sessionHelper';
 import { OpenAiApiService } from '@/api/openaiApiService';
 import { UserConfigContext } from '@/context/UserConfig';
+import { MockApiService } from '@/api/mockApiService';
 
 export class ChatService {
   constructor(
@@ -118,6 +119,8 @@ export class ChatService {
   }
 }
 
+const USE_MOCK_API = false;
+
 export const useChatService = (
   storageProvider: StorageProvider,
 ): {
@@ -125,7 +128,9 @@ export const useChatService = (
 } => {
   const { userConfig } = useContext(UserConfigContext);
 
-  const apiService = new OpenAiApiService(userConfig?.apiKey ?? '');
+  const apiService = USE_MOCK_API
+    ? new MockApiService()
+    : new OpenAiApiService(userConfig?.apiKey ?? '');
 
   return { chatService: new ChatService(storageProvider, apiService) };
 };
