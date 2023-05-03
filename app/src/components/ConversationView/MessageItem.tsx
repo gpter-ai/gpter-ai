@@ -27,7 +27,8 @@ export const MessageItem: React.FC<Props> = ({ message }) => {
           </SpaceBetween>
         }
       >
-        <Box>{content}</Box>
+        {/* eslint-disable-next-line react/no-danger */}
+        <div dangerouslySetInnerHTML={{ __html: content }} />
       </Container>
     </div>
   );
