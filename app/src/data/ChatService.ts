@@ -3,8 +3,7 @@ import Dexie from 'dexie';
 import { ChatCompletionRequestMessage } from 'openai';
 import { StorageProvider } from '@/data/StorageProvider';
 import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
-// import { MockApiService } from '@/api/mockApiService';
-import { Chunk, ChunkContentKind } from './types';
+import { Chunk, ChunkContentKind, PartialChunkData } from './types';
 import { assertNonNullable } from '@/utils/asserts';
 // TODO remove import from components
 import { ChatMessage } from '@/components/types';
@@ -17,9 +16,7 @@ export class ChatService {
   constructor(
     private storageProvider: StorageProvider,
     private apiService: ApiService,
-  ) {
-    // this.#apiService = new MockApiService();
-  }
+  ) {}
 
   chatMessageToRequestMessage(
     chatMessage: ChatMessage,
@@ -92,18 +89,16 @@ export class ChatService {
     message: string,
     assistantId: string,
   ): Promise<void> {
-    const userMessageChunk: Omit<Chunk, 'id'> = {
+    const userMessageChunk: PartialChunkData = {
       content: { message, kind: ChunkContentKind.DATA },
       role: 'user',
       assistantId,
-      timestamp: Date.now(),
     };
 
-    const userDoneChunk: Omit<Chunk, 'id'> = {
+    const userDoneChunk: PartialChunkData = {
       content: { kind: ChunkContentKind.DONE },
       role: 'user',
       assistantId,
-      timestamp: Date.now() + 1,
     };
 
     await this.storageProvider.createChunk(userMessageChunk);
@@ -111,14 +106,13 @@ export class ChatService {
 
     const messages = await this.getSessionHistory(assistantId);
 
-    const processAbort = async (messageIndex: number): Promise<void> => {
+    const processAbort = async (): Promise<void> => {
       Dexie.currentTransaction && Dexie.currentTransaction.abort();
 
       await this.storageProvider.createChunk({
         content: { kind: ChunkContentKind.DONE },
         role: 'assistant',
         assistantId,
-        timestamp: Date.now() + messageIndex,
       });
     };
 
@@ -129,7 +123,6 @@ export class ChatService {
           content: { kind: ChunkContentKind.DONE },
           role: 'assistant',
           assistantId,
-          timestamp: Date.now() + response.messageIndex,
         });
         return;
       }
@@ -137,10 +130,9 @@ export class ChatService {
       this.storageProvider.createChunk({
         role: 'assistant',
         assistantId,
-        timestamp: Date.now() + response.messageIndex,
         content: {
           kind: ChunkContentKind.DATA,
-          message: response.data.choices[0]?.delta?.content ?? '',
+          message: response.message,
         },
       });
     };
@@ -153,7 +145,7 @@ export class ChatService {
   }
 }
 
-const USE_MOCK_API = true;
+const USE_MOCK_API = false;
 
 export const useChatService = (
   storageProvider: StorageProvider,

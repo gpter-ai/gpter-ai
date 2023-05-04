@@ -1,6 +1,12 @@
 import { Nullable } from '@/types';
-import { StorageProvider } from '../StorageProvider';
-import { Assistant, AssistantFormFields, Chunk, UserConfig } from '../types';
+import { StorageProvider } from '@/data';
+import {
+  Assistant,
+  AssistantFormFields,
+  Chunk,
+  PartialChunkData,
+  UserConfig,
+} from '../types';
 import { GPTerDexie } from './db';
 import { USER_CONFIG_STORAGE_KEY } from '../constants';
 import { generateUUID } from '../utils';
@@ -28,12 +34,11 @@ export class IndexedStorageProvider implements StorageProvider {
     });
   }
 
-  createChunk(data: Omit<Chunk, 'id'>): void {
-    // @TODO - think about building in validation layer
+  createChunk(data: PartialChunkData): void {
     this.#db.chunks.add({
       ...data,
-      id: generateUUID(),
-    });
+      timestamp: Date.now(),
+    } as Chunk);
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {

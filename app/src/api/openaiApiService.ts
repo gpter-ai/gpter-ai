@@ -22,7 +22,7 @@ export class OpenAiApiService implements ApiService {
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
-    onAbort?: (messageIndex: number) => Promise<void>,
+    onAbort?: () => void,
   ): Promise<void> {
     const requestParam: CreateChatCompletionRequest = {
       model: OPENAI_MODEL,
@@ -36,16 +36,12 @@ export class OpenAiApiService implements ApiService {
       'Content-Type': 'application/json',
     };
 
-    // @TODO - consider replacing this by introducing auto incremented field
-    // into the chunks table
-    let messageIndex: number = 0;
-
     const abortController = new AbortController();
     const { signal } = abortController;
 
     const onAbortCallback = async (): Promise<void> => {
       abortController.abort();
-      onAbort && (await onAbort(messageIndex));
+      onAbort && onAbort();
     };
 
     await fetchEventSource(`${BASE_OPENAI_URL}v1/chat/completions`, {
@@ -53,7 +49,6 @@ export class OpenAiApiService implements ApiService {
       body: JSON.stringify(requestParam),
       headers,
       async onopen() {
-        messageIndex = 0;
         window.addEventListener('beforeunload', onAbortCallback);
       },
       onclose: () => {
@@ -63,19 +58,22 @@ export class OpenAiApiService implements ApiService {
         window.removeEventListener('beforeunload', onAbortCallback);
       },
       onmessage: (msg) => {
-        messageIndex++;
-
         const apiResponse: ApiResponse =
           msg.data === DATA_STREAM_DONE_INDICATOR
-            ? { kind: ApiResponseType.Done, messageIndex }
+            ? { kind: ApiResponseType.Done }
             : {
                 kind: ApiResponseType.Data,
-                data: JSON.parse(msg.data) as ApiResponsePayload,
-                messageIndex,
+                message: this.extractMessage(msg.data),
               };
         onResponse(apiResponse);
       },
       signal,
     });
+  }
+
+  private extractMessage(data: string): string {
+    const payload = JSON.parse(data) as ApiResponsePayload;
+
+    return payload.choices[0]?.delta?.content ?? '';
   }
 }

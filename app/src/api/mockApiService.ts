@@ -27,12 +27,11 @@ export class MockApiService implements ApiService {
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
   ): Promise<void> {
-    console.log('sending following messages', messages);
     let index = 0;
     const intervalId = setInterval(() => {
       if (index >= SAMPLE_MESSAGE.length) {
         clearInterval(intervalId);
-        onResponse({ kind: ApiResponseType.Done, messageIndex: index });
+        onResponse({ kind: ApiResponseType.Done });
       } else {
         onResponse(this.createDataResponse(index));
       }
@@ -42,22 +41,8 @@ export class MockApiService implements ApiService {
 
   private createDataResponse(index: number): ApiResponse {
     return {
-      messageIndex: index,
       kind: ApiResponseType.Data,
-      data: {
-        created: new Date().getDate(),
-        object: 'message',
-        model: 'Mock',
-        id: '123',
-        choices: [
-          {
-            delta: {
-              content: `${SAMPLE_MESSAGE[index]} `,
-              role: 'assistant',
-            },
-          },
-        ],
-      },
+      message: `${SAMPLE_MESSAGE[index]} `,
     };
   }
 }

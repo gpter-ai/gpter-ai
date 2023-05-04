@@ -42,12 +42,14 @@ export type ChunkContent =
   | ChunkContentAbort;
 
 export type Chunk = {
-  id: string;
+  id: number;
   assistantId: string;
   timestamp: number;
   content: ChunkContent;
   role: ChatGptRole;
 };
+
+export type PartialChunkData = Omit<Chunk, 'id' | 'timestamp'>;
 
 export type UserConfig = {
   apiKey: string;

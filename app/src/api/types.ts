@@ -11,7 +11,7 @@ export interface ApiService {
   sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
-    onAbort?: (messageIndex: number) => Promise<void>,
+    onAbort?: () => Promise<void>,
   ): Promise<void>;
 }
 
@@ -22,7 +22,6 @@ export enum ApiResponseType {
 
 export interface ApiResponseFinish {
   kind: ApiResponseType.Done;
-  messageIndex: number;
 }
 
 export type ApiResponseChoice = Omit<
@@ -41,9 +40,9 @@ export type ApiResponsePayload = Omit<
 
 export interface ApiResponseData {
   kind: ApiResponseType.Data;
-  messageIndex: number;
-  // TODO: fix types properly
-  data: ApiResponsePayload;
+  // TODO: wait for types to be fixed
+  // https://github.com/openai/openai-node/issues/74
+  message: string;
 }
 
 export type ApiResponse = ApiResponseFinish | ApiResponseData;
