@@ -22,7 +22,7 @@ export class OpenAiApiService implements ApiService {
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
-    onAbort?: () => void,
+    abortSignal?: AbortSignal,
   ): Promise<void> {
     const requestParam: CreateChatCompletionRequest = {
       model: OPENAI_MODEL,
@@ -36,27 +36,10 @@ export class OpenAiApiService implements ApiService {
       'Content-Type': 'application/json',
     };
 
-    const abortController = new AbortController();
-    const { signal } = abortController;
-
-    const onAbortCallback = async (): Promise<void> => {
-      abortController.abort();
-      onAbort && onAbort();
-    };
-
     await fetchEventSource(`${BASE_OPENAI_URL}v1/chat/completions`, {
       method: 'POST',
       body: JSON.stringify(requestParam),
       headers,
-      async onopen() {
-        window.addEventListener('beforeunload', onAbortCallback);
-      },
-      onclose: () => {
-        window.removeEventListener('beforeunload', onAbortCallback);
-      },
-      onerror: () => {
-        window.removeEventListener('beforeunload', onAbortCallback);
-      },
       onmessage: (msg) => {
         const apiResponse: ApiResponse =
           msg.data === DATA_STREAM_DONE_INDICATOR
@@ -67,7 +50,7 @@ export class OpenAiApiService implements ApiService {
               };
         onResponse(apiResponse);
       },
-      signal,
+      signal: abortSignal,
     });
   }
 

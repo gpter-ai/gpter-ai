@@ -11,11 +11,13 @@ import { getSessionStartDate } from './sessionHelper';
 import { OpenAiApiService } from '@/api/openaiApiService';
 import { UserConfigContext } from '@/context/UserConfig';
 import { MockApiService } from '@/api/mockApiService';
+import { Nullable } from '@/types';
 
 export class ChatService {
   constructor(
     private storageProvider: StorageProvider,
     private apiService: ApiService,
+    private abortController: AbortController,
   ) {}
 
   chatMessageToRequestMessage(
@@ -85,6 +87,18 @@ export class ChatService {
     return [promptMessage, ...messages];
   }
 
+  public async abortEventsReceiving(assistantId: string): Promise<void> {
+    this.abortController.abort();
+
+    Dexie.currentTransaction && Dexie.currentTransaction.abort();
+
+    await this.storageProvider.createChunk({
+      content: { kind: ChunkContentKind.DONE },
+      role: 'assistant',
+      assistantId,
+    });
+  }
+
   public async onMessageSubmit(
     message: string,
     assistantId: string,
@@ -105,16 +119,6 @@ export class ChatService {
     await this.storageProvider.createChunk(userDoneChunk);
 
     const messages = await this.getSessionHistory(assistantId);
-
-    const processAbort = async (): Promise<void> => {
-      Dexie.currentTransaction && Dexie.currentTransaction.abort();
-
-      await this.storageProvider.createChunk({
-        content: { kind: ChunkContentKind.DONE },
-        role: 'assistant',
-        assistantId,
-      });
-    };
 
     const processResponse = (response: ApiResponse): void => {
       // @TODO - consider using finish reason instead
@@ -137,15 +141,25 @@ export class ChatService {
       });
     };
 
+    const abortCallback = async (): Promise<void> => {
+      await this.abortEventsReceiving(assistantId);
+    };
+
+    window.addEventListener('beforeunload', abortCallback);
+
     await this.apiService.sendMessages(
       messages.map(this.chatMessageToRequestMessage),
       processResponse,
-      processAbort,
+      this.abortController.signal,
     );
+
+    window.removeEventListener('beforeunload', abortCallback);
   }
 }
 
 const USE_MOCK_API = false;
+
+let chatService: Nullable<ChatService> = null;
 
 export const useChatService = (
   storageProvider: StorageProvider,
@@ -154,9 +168,19 @@ export const useChatService = (
 } => {
   const { userConfig } = useContext(UserConfigContext);
 
+  if (chatService) {
+    return { chatService };
+  }
+
   const apiService = USE_MOCK_API
     ? new MockApiService()
     : new OpenAiApiService(userConfig?.apiKey ?? '');
 
-  return { chatService: new ChatService(storageProvider, apiService) };
+  chatService = new ChatService(
+    storageProvider,
+    apiService,
+    new AbortController(),
+  );
+
+  return { chatService };
 };

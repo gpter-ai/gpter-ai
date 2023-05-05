@@ -29,7 +29,7 @@ type Props = {
 const Chat: FC<Props> = ({ assistant }) => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
-  const [inputDisabled, setInputDisabled] = useState(false);
+  const [receivingInProgress, setReceivingInProgress] = useState(false);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, updateTextAreaHeight } = useAutoGrowTextArea();
@@ -52,7 +52,7 @@ const Chat: FC<Props> = ({ assistant }) => {
   useEffect(() => {
     const lastMessage = history.at(-1);
 
-    setInputDisabled(
+    setReceivingInProgress(
       !!(
         lastMessage &&
         lastMessage.role === 'assistant' &&
@@ -118,6 +118,22 @@ const Chat: FC<Props> = ({ assistant }) => {
   const renderConversation = !isEmptyState;
   const textAreaRowCount = renderConversation ? 2 : 20;
 
+  const onStopButtonClick = (): void => {
+    chatService.abortEventsReceiving(assistant.id);
+  };
+
+  const SubmitButton = (
+    <Button variant="primary" onClick={onMessageSubmit}>
+      Submit
+    </Button>
+  );
+
+  const StopButton = (
+    <Button iconName="status-negative" onClick={onStopButtonClick}>
+      Stop
+    </Button>
+  );
+
   return (
     <Container
       header={
@@ -136,17 +152,11 @@ const Chat: FC<Props> = ({ assistant }) => {
               onChange={onValueChange}
               rows={textAreaRowCount}
               autoFocus
-              disabled={inputDisabled}
+              disabled={receivingInProgress}
             />
           </FormField>
           <Box textAlign="right">
-            <Button
-              disabled={inputDisabled}
-              variant="primary"
-              onClick={onMessageSubmit}
-            >
-              Submit
-            </Button>
+            {receivingInProgress ? StopButton : SubmitButton}
           </Box>
         </SpaceBetween>
       </div>

@@ -11,7 +11,7 @@ export interface ApiService {
   sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
-    onAbort?: () => Promise<void>,
+    abortSignal?: AbortSignal,
   ): Promise<void>;
 }
 
