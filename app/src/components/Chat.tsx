@@ -20,6 +20,8 @@ import { useChatService } from '@/data/ChatService';
 import { ChatMessage } from './types';
 import { ConversationView } from '@/components/ConversationView';
 
+import './Chat.scss';
+
 type Props = {
   assistant: Assistant;
 };
@@ -125,6 +127,7 @@ const Chat: FC<Props> = ({ assistant }) => {
       }
     >
       <div ref={containerRef}>
+        <div className="header__line" />
         <SpaceBetween size="m" direction="vertical">
           {renderConversation && <ConversationView messages={history} />}
           <FormField errorText={inputError} stretch label="Type a query">

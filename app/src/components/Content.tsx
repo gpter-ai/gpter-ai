@@ -3,27 +3,21 @@ import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import { Box, Button, Grid, GridProps } from '@cloudscape-design/components';
 import { FC, useContext, useEffect, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import AssistantsList from './AssistantsList';
 import Chat from './Chat';
 import { Assistant, UserConfig } from '@/data/types';
-import { useStorageProvider } from '@/hooks/useStorageProvider';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
 import ConfigModal from './ConfigModal/ConfigModal';
+import { useAssistants } from '@/data/prefill/prefill';
 
 const Content: FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
-  const storageProvider = useStorageProvider();
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
 
-  const assistants = useLiveQuery(
-    () => storageProvider.getAssistants(),
-    [storageProvider],
-    [],
-  );
+  const { assistants, prefill } = useAssistants();
 
   const [selectedAssistantId, setSelectedAssistantId] =
     useState<Nullable<string>>();
@@ -98,6 +92,7 @@ const Content: FC = () => {
       <AssistantModalProvider>
         <Grid gridDefinition={gridDefinition}>
           <AssistantsList
+            onPrefillClick={prefill}
             onSelectedAssistantIdChange={setSelectedAssistantId}
             selectedAssistantId={selectedAssistant?.id}
             assistants={assistants}

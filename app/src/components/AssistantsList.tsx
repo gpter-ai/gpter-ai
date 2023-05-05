@@ -12,12 +12,14 @@ type Props = {
   onSelectedAssistantIdChange: (id: string) => void;
   selectedAssistantId: Nullable<string>;
   assistants: Assistant[];
+  onPrefillClick: () => void;
 };
 
 const AssistantsList: FC<Props> = ({
   onSelectedAssistantIdChange,
   selectedAssistantId,
   assistants,
+  onPrefillClick,
 }) => {
   const storageProvider = useStorageProvider();
   const assistantModal = useAssistantModal();
@@ -44,6 +46,13 @@ const AssistantsList: FC<Props> = ({
             </Button>
           </div>
         ))}
+        {assistants.length === 0 && (
+          <div className="assistantsListButtonWrapper">
+            <Button iconName="add-plus" onClick={onPrefillClick} variant="link">
+              Get Default Assistants
+            </Button>
+          </div>
+        )}
         <div className="assistantsListButtonWrapper">
           <Button
             iconName="add-plus"
