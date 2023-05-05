@@ -114,10 +114,6 @@ const Chat: FC<Props> = ({ assistant }) => {
     await chatService.onMessageSubmit(`${text}`, assistant.id);
   };
 
-  const isEmptyState = history.length === 0;
-  const renderConversation = !isEmptyState;
-  const textAreaRowCount = renderConversation ? 2 : 20;
-
   const onStopButtonClick = (): void => {
     chatService.abortEventsReceiving(assistant.id);
   };
@@ -145,12 +141,12 @@ const Chat: FC<Props> = ({ assistant }) => {
       <div ref={containerRef}>
         <div className="header__line" />
         <SpaceBetween size="m" direction="vertical">
-          {renderConversation && <ConversationView messages={history} />}
+          <ConversationView messages={history} />
           <FormField errorText={inputError} stretch label="Type a query">
             <Textarea
               value={text}
               onChange={onValueChange}
-              rows={textAreaRowCount}
+              rows={2}
               autoFocus
               disabled={receivingInProgress}
             />

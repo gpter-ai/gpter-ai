@@ -1,5 +1,5 @@
 import React from 'react';
-import { SpaceBetween } from '@cloudscape-design/components';
+import { Box, SpaceBetween } from '@cloudscape-design/components';
 import { ChatMessage } from '@/components/types';
 import { chatMessagesToChatItems } from './utils';
 import { ConversationViewItem } from './ConversationViewItem';
@@ -18,6 +18,11 @@ export const ConversationView: React.FC<Props> = ({ messages }) => {
   return (
     <div ref={ref} className="conversationView">
       <SpaceBetween size="m">
+        {itemsToRender.length === 0 && (
+          <Box color="text-status-inactive" textAlign="center">
+            No messages yet
+          </Box>
+        )}
         {itemsToRender.map((content, idx) => (
           <ConversationViewItem key={idx} content={content} />
         ))}
