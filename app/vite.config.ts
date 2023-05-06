@@ -4,8 +4,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron';
 import renderer from 'vite-plugin-electron-renderer';
-import pkg from './package.json';
 import eslint from 'vite-plugin-eslint';
+import pkg from './package.json';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
@@ -23,7 +23,7 @@ export default defineConfig(({ command }) => {
     },
     plugins: [
       react(),
-      eslint({failOnError: false}),
+      eslint({ failOnError: false }),
       electron([
         {
           // Main-Process entry file of the Electron App.

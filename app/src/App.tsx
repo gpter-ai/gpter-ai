@@ -3,7 +3,7 @@ import { AppLayout } from '@cloudscape-design/components';
 import Content from '@/components/Content';
 import './App.scss';
 
-const App: FC<{}> = () => {
+const App: FC<object> = () => {
   return <AppLayout navigationHide toolsHide content={<Content />} />;
 };
 

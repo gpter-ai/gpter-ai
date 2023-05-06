@@ -89,6 +89,7 @@ export class ChatService {
 
   public async abortEventsReceiving(assistantId: string): Promise<void> {
     this.abortController.abort();
+    this.abortController = new AbortController();
 
     Dexie.currentTransaction && Dexie.currentTransaction.abort();
 
