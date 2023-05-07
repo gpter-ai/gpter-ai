@@ -31,14 +31,16 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
 
   const apiKeyNeedsValidation = validatedApiKey !== apiKey;
 
-  const validateFormat = (): string => {
-    if (apiKey.trim() === '') {
+  const validateFormat = (newKey?: string): string => {
+    const value = newKey ?? apiKey;
+
+    if (value.trim() === '') {
       return 'Api Key is requried!';
     }
 
-    const match = apiKey.match(OPENAI_API_KEY_PATTERN);
+    const match = value.match(OPENAI_API_KEY_PATTERN);
 
-    if (!match || match[0] !== apiKey) {
+    if (!match || match[0] !== value) {
       return 'Api Key is wrong! Example of a correct key: sk-alsmdlad98d32dj0239i1209e120pokd12p0osk0p12ksm192';
     }
 
@@ -116,7 +118,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
         <Input
           value={apiKey}
           onChange={(event): void => {
-            setApiKeyError('');
+            setApiKeyError(validateFormat(event.detail.value));
             setApiKey(event.detail.value);
           }}
         />
