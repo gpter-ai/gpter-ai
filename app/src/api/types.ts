@@ -8,6 +8,7 @@ import {
 } from 'openai/api';
 
 export interface ApiService {
+  checkAuthToken(): Promise<'valid' | 'invalid' | 'error'>;
   sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,

@@ -8,11 +8,8 @@ import {
 } from '@cloudscape-design/components';
 import { FC, useEffect, useState } from 'react';
 import { UserConfig } from '@/data/types';
-import {
-  DEFAULT_MAX_TOKENS,
-  OPENAI_API_KEY_PATTERN,
-  TOKENS_HARD_LIMIT,
-} from '../constants';
+import { useApiService } from '@/hooks/useApiService';
+import { OPENAI_API_KEY_PATTERN } from '../constants';
 
 type Props = {
   initValues: Partial<UserConfig>;
@@ -22,63 +19,63 @@ type Props = {
 
 const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
   const [apiKey, setApiKey] = useState<string>('');
-  const [maxTokens, setMaxTokens] = useState<string>(`${DEFAULT_MAX_TOKENS}`);
-
+  const [validatedApiKey, setValidatedApiKey] = useState<string>('');
   const [apiKeyError, setApiKeyError] = useState<string>('');
-  const [maxTokensError, setMaxTokensError] = useState<string>('');
 
   useEffect(() => {
     setApiKey(initValues?.apiKey || '');
-    setMaxTokens(`${initValues?.maxTokens || DEFAULT_MAX_TOKENS}`);
+    setValidatedApiKey(initValues?.apiKey || '');
   }, [initValues]);
 
-  // @TODO - think about a better validation
-  const validateApiKey = (): boolean => {
+  const { apiService } = useApiService(apiKey);
+
+  const apiKeyNeedsValidation = validatedApiKey !== apiKey;
+
+  const validateFormat = (): string => {
     if (apiKey.trim() === '') {
-      setApiKeyError('Api Key is requried!');
-      return false;
+      return 'Api Key is requried!';
     }
 
     const match = apiKey.match(OPENAI_API_KEY_PATTERN);
 
     if (!match || match[0] !== apiKey) {
-      setApiKeyError(
-        'Api Key is wrong! Example of a correct key: sk-alsmdlad98d32dj0239i1209e120pokd12p0osk0p12ksm192',
-      );
-      return false;
+      return 'Api Key is wrong! Example of a correct key: sk-alsmdlad98d32dj0239i1209e120pokd12p0osk0p12ksm192';
     }
 
-    return true;
+    return '';
   };
 
-  const validateMaxTokens = (): boolean => {
-    const value = Number(maxTokens);
-
-    if (value < 1) {
-      setMaxTokensError('Number of tokens must be greater than 0!');
-      return false;
-    }
-
-    if (value > TOKENS_HARD_LIMIT) {
-      setMaxTokensError(
-        `Number of tokens must be less than ${TOKENS_HARD_LIMIT}!`,
-      );
-      return false;
-    }
-
-    return true;
-  };
-
-  const validate = (): boolean => {
-    return validateApiKey() && validateMaxTokens();
-  };
+  const apiKeyValid = validateFormat() === '';
 
   const onSubmit = (): void => {
-    if (validate() === false) {
+    const error = validateFormat();
+
+    if (error) {
+      setApiKeyError(error);
       return;
     }
 
-    onConfirm({ apiKey, maxTokens: parseInt(maxTokens, 10) });
+    if (apiKeyNeedsValidation) {
+      return;
+    }
+
+    onConfirm({ apiKey });
+  };
+
+  const onValidateApiKey = (): void => {
+    apiService.checkAuthToken().then((result) => {
+      switch (result) {
+        case 'valid':
+          setValidatedApiKey(apiKey);
+          break;
+        case 'invalid':
+          setApiKeyError('This API key is invalid! Try a different one!');
+          break;
+        case 'error':
+          setApiKeyError('Something went wrong! Try again later!');
+          break;
+      }
+    });
   };
 
   return (
@@ -86,43 +83,41 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
       visible={visible}
       closeAriaLabel="Close modal"
       size="medium"
-      onDismiss={onSubmit}
+      onDismiss={() => {
+        if (initValues.apiKey) {
+          onConfirm({ apiKey: initValues.apiKey });
+        } else {
+          onSubmit();
+        }
+      }}
       footer={
         <Box float="right">
           <SpaceBetween direction="horizontal" size="xs">
-            <Button onClick={onSubmit} variant="primary">
+            {apiKeyNeedsValidation && apiKeyValid && (
+              <Button onClick={onValidateApiKey}>Validate API Key</Button>
+            )}
+            <Button
+              disabled={!apiKeyValid || apiKeyNeedsValidation}
+              onClick={onSubmit}
+              variant="primary"
+            >
               Save
             </Button>
           </SpaceBetween>
         </Box>
       }
-      header="You need an API Key to use the app!"
+      header="Configuration"
     >
       <FormField
         errorText={apiKeyError}
         label="Put your API key here."
-        description="More info on API key here..."
+        description="You need the API key in order to be able to connect to the AI"
       >
         <Input
           value={apiKey}
           onChange={(event): void => {
             setApiKeyError('');
             setApiKey(event.detail.value);
-          }}
-        />
-      </FormField>
-      <FormField
-        errorText={maxTokensError}
-        label="Select the max amount of response tokens."
-        description="One token ~ 4 characters."
-      >
-        <Input
-          value={maxTokens}
-          type="number"
-          step={1}
-          onChange={(event): void => {
-            setMaxTokensError('');
-            setMaxTokens(event.detail.value);
           }}
         />
       </FormField>

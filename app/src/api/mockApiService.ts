@@ -23,6 +23,12 @@ const SAMPLE_MESSAGE = [
 ];
 
 export class MockApiService implements ApiService {
+  async checkAuthToken(): Promise<'valid' | 'invalid' | 'error'> {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve('valid'), 1000);
+    });
+  }
+
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,

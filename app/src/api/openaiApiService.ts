@@ -6,6 +6,7 @@ import {
 import {
   BASE_OPENAI_URL,
   DATA_STREAM_DONE_INDICATOR,
+  MAX_RESPONSE_TOKENS,
   OPENAI_MODEL,
 } from './constants';
 import {
@@ -14,12 +15,31 @@ import {
   ApiResponseType,
   ApiService,
 } from './types';
-import { DEFAULT_MAX_TOKENS } from '@/components/constants';
 import UnauhtorizedError from './error/UnauthorizedError';
 import GeneralError from './error/GeneralError';
 
 export class OpenAiApiService implements ApiService {
   constructor(private apiKey: string) {}
+
+  async checkAuthToken(): Promise<'valid' | 'invalid' | 'error'> {
+    const headers = {
+      authorization: `Bearer ${this.apiKey}`,
+    };
+
+    return fetch(`${BASE_OPENAI_URL}v1/models`, { headers }).then(
+      (response) => {
+        if (response.status === 401) {
+          return 'invalid';
+        }
+
+        if (response.ok) {
+          return 'valid';
+        }
+
+        return 'error';
+      },
+    );
+  }
 
   async sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
@@ -30,7 +50,7 @@ export class OpenAiApiService implements ApiService {
       model: OPENAI_MODEL,
       messages,
       stream: true,
-      max_tokens: DEFAULT_MAX_TOKENS,
+      max_tokens: MAX_RESPONSE_TOKENS,
     };
 
     const headers = {

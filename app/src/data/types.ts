@@ -53,6 +53,4 @@ export type PartialChunkData = Omit<Chunk, 'id' | 'timestamp'>;
 
 export type UserConfig = {
   apiKey: string;
-  // @TODO - currently this is not used
-  maxTokens: number;
 };

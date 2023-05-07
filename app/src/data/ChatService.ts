@@ -13,6 +13,7 @@ import { UserConfigContext } from '@/context/UserConfig';
 import { MockApiService } from '@/api/mockApiService';
 import { Nullable } from '@/types';
 import ApiError from '@/api/error/ApiError';
+import { useApiService } from '@/hooks/useApiService';
 
 export class ChatService {
   constructor(
@@ -169,8 +170,6 @@ export class ChatService {
   }
 }
 
-const USE_MOCK_API = false;
-
 let chatService: Nullable<ChatService> = null;
 
 export const useChatService = (
@@ -178,15 +177,11 @@ export const useChatService = (
 ): {
   chatService: ChatService;
 } => {
-  const { userConfig } = useContext(UserConfigContext);
+  const { apiService } = useApiService();
 
   if (chatService) {
     return { chatService };
   }
-
-  const apiService = USE_MOCK_API
-    ? new MockApiService()
-    : new OpenAiApiService(userConfig?.apiKey ?? '');
 
   chatService = new ChatService(
     storageProvider,
