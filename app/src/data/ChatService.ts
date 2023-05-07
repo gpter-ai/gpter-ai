@@ -12,6 +12,7 @@ import { OpenAiApiService } from '@/api/openaiApiService';
 import { UserConfigContext } from '@/context/UserConfig';
 import { MockApiService } from '@/api/mockApiService';
 import { Nullable } from '@/types';
+import ApiError from '@/api/error/ApiError';
 
 export class ChatService {
   constructor(
@@ -103,6 +104,7 @@ export class ChatService {
   public async onMessageSubmit(
     message: string,
     assistantId: string,
+    onError?: (error: ApiError) => void,
   ): Promise<void> {
     const userMessageChunk: PartialChunkData = {
       content: { message, kind: ChunkContentKind.DATA },
@@ -116,6 +118,7 @@ export class ChatService {
       assistantId,
     };
 
+    // @TODO - check what happens in case of multiple user messages in a row (e.g. due to errors)
     await this.storageProvider.createChunk(userMessageChunk);
     await this.storageProvider.createChunk(userDoneChunk);
 
@@ -148,11 +151,19 @@ export class ChatService {
 
     window.addEventListener('beforeunload', abortCallback);
 
-    await this.apiService.sendMessages(
-      messages.map(this.chatMessageToRequestMessage),
-      processResponse,
-      this.abortController.signal,
-    );
+    try {
+      await this.apiService.sendMessages(
+        messages.map(this.chatMessageToRequestMessage),
+        processResponse,
+        this.abortController.signal,
+      );
+    } catch (error) {
+      if (error instanceof ApiError) {
+        onError && onError(error as ApiError);
+      }
+
+      // @TODO - handle more error types?
+    }
 
     window.removeEventListener('beforeunload', abortCallback);
   }

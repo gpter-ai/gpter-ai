@@ -9,7 +9,7 @@ import {
   SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
@@ -21,6 +21,7 @@ import { ChatMessage } from './types';
 import { ConversationView } from '@/components/ConversationView';
 
 import './Chat.scss';
+import ApiError from '@/api/error/ApiError';
 
 type Props = {
   assistant: Assistant;
@@ -104,6 +105,10 @@ const Chat: FC<Props> = ({ assistant }) => {
     </SpaceBetween>
   );
 
+  const onApiError = useCallback((error: ApiError): void => {
+    setInputError(error.message);
+  }, []);
+
   const onMessageSubmit = async (): Promise<void> => {
     if (!text.trim()) {
       setInputError('Please input your text');
@@ -111,7 +116,7 @@ const Chat: FC<Props> = ({ assistant }) => {
     }
 
     setText('');
-    await chatService.onMessageSubmit(`${text}`, assistant.id);
+    await chatService.onMessageSubmit(`${text}`, assistant.id, onApiError);
   };
 
   const onStopButtonClick = (): void => {

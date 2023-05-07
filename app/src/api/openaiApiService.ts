@@ -15,6 +15,8 @@ import {
   ApiService,
 } from './types';
 import { DEFAULT_MAX_TOKENS } from '@/components/constants';
+import UnauhtorizedError from './error/UnauthorizedError';
+import GeneralError from './error/GeneralError';
 
 export class OpenAiApiService implements ApiService {
   constructor(private apiKey: string) {}
@@ -40,6 +42,22 @@ export class OpenAiApiService implements ApiService {
       method: 'POST',
       body: JSON.stringify(requestParam),
       headers,
+      async onopen(response) {
+        if (response.ok) {
+          return;
+        }
+
+        if (response.status === 401) {
+          throw new UnauhtorizedError('Unauhtorized. Check your API key!');
+        }
+      },
+      onerror: (error) => {
+        if (error instanceof UnauhtorizedError) {
+          throw error;
+        }
+
+        throw new GeneralError();
+      },
       onmessage: (msg) => {
         const apiResponse: ApiResponse =
           msg.data === DATA_STREAM_DONE_INDICATOR
