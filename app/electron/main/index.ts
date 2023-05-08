@@ -1,4 +1,5 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import { release } from 'node:os';
 import { join } from 'node:path';
 
@@ -37,10 +38,10 @@ if (!app.requestSingleInstanceLock()) {
 let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = join(__dirname, '../preload/index.js');
-const url = process.env.VITE_DEV_SERVER_URL;
+const devUrl = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, 'index.html');
 
-async function createWindow() {
+function createWindow(): void {
   win = new BrowserWindow({
     title: 'Main window',
     icon: join(process.env.PUBLIC, 'favicon.ico'),
@@ -50,8 +51,9 @@ async function createWindow() {
     },
   });
 
-  if (url) { // electron-vite-vue#298
-    win.loadURL(url);
+  if (devUrl) {
+    // electron-vite-vue#298
+    win.loadURL(devUrl);
     // Open devTool if the app is not packaged
     win.webContents.openDevTools();
   } else {
@@ -69,7 +71,9 @@ async function createWindow() {
     return { action: 'deny' };
   });
 
-
+  win.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  });
 }
 
 app.whenReady().then(createWindow);
@@ -94,4 +98,16 @@ app.on('activate', () => {
   } else {
     createWindow();
   }
+});
+
+autoUpdater.on('update-available', () => {
+  win && win.webContents.send('update_available');
+});
+
+autoUpdater.on('update-downloaded', () => {
+  win && win.webContents.send('update_downloaded');
+});
+
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
 });
