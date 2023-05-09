@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import Dexie from 'dexie';
 import { ChatCompletionRequestMessage } from 'openai';
 import { StorageProvider } from '@/data/StorageProvider';
@@ -8,9 +7,6 @@ import { assertNonNullable } from '@/utils/asserts';
 // TODO remove import from components
 import { ChatMessage } from '@/components/types';
 import { getSessionStartDate } from './sessionHelper';
-import { OpenAiApiService } from '@/api/openaiApiService';
-import { UserConfigContext } from '@/context/UserConfig';
-import { MockApiService } from '@/api/mockApiService';
 import { Nullable } from '@/types';
 import ApiError from '@/api/error/ApiError';
 import { useApiService } from '@/hooks/useApiService';

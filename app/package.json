@@ -17,7 +17,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.prod.json && vite build && electron-builder",
+    "build": "tsc -p tsconfig.prod.json && vite build",
+    "release": "electron-builder",
     "watch": "tsc --watch",
     "preview": "vite preview",
     "style": "prettier -c ./src && eslint ./src",
@@ -77,9 +78,5 @@
   },
   "engines": {
     "node": ">=18.15.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ssaprank/gpter-releases.git"
   }
 }

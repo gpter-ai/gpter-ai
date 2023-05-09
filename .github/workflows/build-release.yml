@@ -1,0 +1,45 @@
+name: Build Assets
+
+concurrency:
+  group: build-release
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    defaults:
+      run:
+        working-directory: ./app
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - run: npm ci
+
+      - run: npm test
+
+      - run: npm run build
+
+      - run: npm run release

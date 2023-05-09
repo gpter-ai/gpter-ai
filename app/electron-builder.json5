@@ -12,6 +12,10 @@
     artifactName: '${productName}_${version}.${ext}',
     target: ['dmg', 'zip'],
   },
+  linux: {
+    artifactName: '${productName}_${version}.${ext}',
+    target: ['zip'],
+  },
   win: {
     target: [
       {
@@ -29,6 +33,8 @@
   },
   publish: {
     provider: 'github',
-    token: '',
+    repo: 'gpter-ai',
+    owner: 'gpter-ai',
+    releaseType: 'draft',
   },
 }
