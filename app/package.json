@@ -1,9 +1,13 @@
 {
-  "name": "app",
-  "version": "2.2.0",
+  "name": "gpter-ai",
+  "version": "0.0.1",
   "main": "dist-electron/main/index.js",
-  "description": "Electron Vite React boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "description": "Spin up GPT assistants in 2 clicks",
+  "author": "gpter-ai",
+  "contributors": [
+    "ssaprank <stanislau.saprankou@gmail.com>",
+    "dmitrybabich <dmitrybabichmail@gmail.com"
+  ],
   "license": "MIT",
   "private": true,
   "debug": {
