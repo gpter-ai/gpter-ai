@@ -12,7 +12,7 @@ import AssistantModal, {
 } from '@/components/AssistantModal';
 import { AssistantFormFields } from '@/data/types';
 
-type OpenModalProps = Pick<AssistantModalProps, 'onSubmit'> &
+type OpenModalProps = Pick<AssistantModalProps, 'onSubmit' | 'mode'> &
   Partial<Pick<AssistantModalProps, 'initData'>>;
 
 type AssistantModalContextValue = {
@@ -39,6 +39,7 @@ const AssistantModalProvider: FC<AssistantModalProviderProps> = ({
   );
 
   const [visible, setVisible] = useState<boolean>(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [initModalData, setInitModalData] =
     useState<AssistantFormFields>(emptyFormData);
   const [onModalSubmit, setOnModalSubmit] = useState<
@@ -46,11 +47,12 @@ const AssistantModalProvider: FC<AssistantModalProviderProps> = ({
   >(() => {});
 
   const openModal = useCallback(
-    ({ onSubmit, initData }: OpenModalProps): void => {
+    ({ onSubmit, initData, mode }: OpenModalProps): void => {
       setOnModalSubmit(() => (props: AssistantFormFields) => onSubmit(props));
       setInitModalData(initData ?? emptyFormData);
 
       setVisible(true);
+      setModalMode(mode);
     },
     [emptyFormData],
   );
@@ -72,6 +74,7 @@ const AssistantModalProvider: FC<AssistantModalProviderProps> = ({
         setVisible={setVisible}
         onSubmit={onModalSubmit}
         initData={initModalData}
+        mode={modalMode}
       />
     </>
   );

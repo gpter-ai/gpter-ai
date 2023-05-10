@@ -13,12 +13,12 @@ import { FC, useEffect, useState } from 'react';
 import DangerModal from './DangerModal';
 import { AssistantFormFields } from '@/data/types';
 
-// @TODO - add mode. e.g. change submit button value based on it
 export type Props = {
   visible: boolean;
   setVisible: (value: boolean) => void;
   onSubmit: (fields: AssistantFormFields) => void;
   initData: AssistantFormFields;
+  mode: 'create' | 'edit';
 };
 
 const AssistantModal: FC<Props> = ({
@@ -26,6 +26,7 @@ const AssistantModal: FC<Props> = ({
   setVisible,
   onSubmit,
   initData,
+  mode,
 }) => {
   const [name, setName] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
@@ -103,7 +104,7 @@ const AssistantModal: FC<Props> = ({
       onDismiss={confirmDismiss}
       visible={visible}
       closeAriaLabel="Close"
-      header="New Assistant"
+      header={mode === 'create' ? 'New Assistant' : 'Edit Assistant'}
       footer={
         <Box float="right">
           <SpaceBetween direction="horizontal" size="xs">
@@ -111,7 +112,7 @@ const AssistantModal: FC<Props> = ({
               Cancel
             </Button>
             <Button variant="primary" onClick={create}>
-              Create
+              {mode === 'create' ? 'Create' : 'Save'}
             </Button>
           </SpaceBetween>
         </Box>

@@ -83,6 +83,7 @@ const Chat: FC<Props> = ({ assistant }) => {
         name: assistant.name,
         prompt: assistant.prompt,
       },
+      mode: 'edit',
     });
 
   const onDeleteAssistantClick = (): void => {

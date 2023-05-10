@@ -29,7 +29,10 @@ const AssistantsList: FC<Props> = ({
   };
 
   const onNewAssistantClick = (): void =>
-    assistantModal.openModal({ onSubmit: onAssistantModalSubmit });
+    assistantModal.openModal({
+      onSubmit: onAssistantModalSubmit,
+      mode: 'create',
+    });
 
   return (
     <Container>
