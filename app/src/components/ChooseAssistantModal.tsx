@@ -15,6 +15,7 @@ type AssistantsCardsProps = {
 const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
   return (
     <Cards
+      trackBy={(item) => item.title}
       cardDefinition={{
         header: (item) =>
           item.title.charAt(0).toUpperCase() + item.title.slice(1),

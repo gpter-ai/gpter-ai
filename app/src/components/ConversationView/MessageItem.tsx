@@ -2,6 +2,7 @@ import React, { CSSProperties } from 'react';
 import { Box, Container, SpaceBetween } from '@cloudscape-design/components';
 import { ChatMessage } from '@/components/types';
 import './MessageItem.scss';
+import { withCodeHighlighting } from './utils/decorators';
 
 interface Props {
   message: ChatMessage;
@@ -9,6 +10,7 @@ interface Props {
 
 export const MessageItem: React.FC<Props> = ({ message }) => {
   const { role, content } = message;
+
   const alignRight = role !== 'user';
   const header = role === 'user' ? 'You' : 'Assistant';
   const fontColor = role === 'user' ? 'inherit' : 'text-status-info';
@@ -29,7 +31,9 @@ export const MessageItem: React.FC<Props> = ({ message }) => {
         }
       >
         {/* eslint-disable-next-line react/no-danger */}
-        <div dangerouslySetInnerHTML={{ __html: content }} />
+        <div
+          dangerouslySetInnerHTML={{ __html: withCodeHighlighting(content) }}
+        />
       </Container>
     </div>
   );
