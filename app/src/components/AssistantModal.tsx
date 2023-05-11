@@ -45,7 +45,7 @@ const AssistantModal: FC<Props> = ({
     name !== initData.name || prompt !== initData.prompt;
 
   const nameValid = (): boolean => name.trim() !== '';
-  const promptValid = (): boolean => prompt.trim() !== '';
+  const promptValid = (): boolean => true;
 
   // @TODO - come up with better validation rules
   const isValid = (): boolean => nameValid() && promptValid();

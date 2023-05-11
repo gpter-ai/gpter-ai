@@ -3,21 +3,21 @@ import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import { Box, Button, Grid, GridProps } from '@cloudscape-design/components';
 import { FC, useContext, useEffect, useState } from 'react';
-import AssistantsList from './AssistantsList';
+import AssistantsPane from './AssistantsPane';
 import Chat from './Chat';
 import { Assistant, UserConfig } from '@/data/types';
 import AssistantModalProvider from '@/context/AssistantModal';
 import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
 import ConfigModal from './ConfigModal/ConfigModal';
-import { useAssistants } from '@/data/prefill/prefill';
+import { useAssistants } from '@/hooks/useAssistants';
 
 const Content: FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
 
-  const { assistants, prefill } = useAssistants();
+  const { assistants } = useAssistants();
 
   const [selectedAssistantId, setSelectedAssistantId] =
     useState<Nullable<string>>();
@@ -91,8 +91,7 @@ const Content: FC = () => {
     >
       <AssistantModalProvider>
         <Grid gridDefinition={gridDefinition}>
-          <AssistantsList
-            onPrefillClick={prefill}
+          <AssistantsPane
             onSelectedAssistantIdChange={setSelectedAssistantId}
             selectedAssistantId={selectedAssistant?.id}
             assistants={assistants}
