@@ -11,9 +11,11 @@ import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
 import ConfigModal from './ConfigModal/ConfigModal';
 import { useAssistants } from '@/hooks/useAssistants';
+import HelpModal from './HelpModal';
 
 const Content: FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
+  const [helpModalVisible, setHelpModalVisible] = useState<boolean>(false);
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
 
@@ -74,6 +76,14 @@ const Content: FC = () => {
       >
         Configure
       </Button>
+      <Button
+        iconName="status-info"
+        onClick={(): void => {
+          setHelpModalVisible(true);
+        }}
+      >
+        Help
+      </Button>
     </SpaceBetween>
   );
 
@@ -104,6 +114,7 @@ const Content: FC = () => {
         visible={configModalVisible}
         onConfirm={onConfigModalConfirm}
       />
+      <HelpModal visible={helpModalVisible} setVisible={setHelpModalVisible} />
     </ContentLayout>
   );
 };
