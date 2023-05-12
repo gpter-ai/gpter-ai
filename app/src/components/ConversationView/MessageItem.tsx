@@ -30,10 +30,7 @@ export const MessageItem: React.FC<Props> = ({ message }) => {
           </SpaceBetween>
         }
       >
-        {/* eslint-disable-next-line react/no-danger */}
-        <div
-          dangerouslySetInnerHTML={{ __html: withCodeHighlighting(content) }}
-        />
+        {withCodeHighlighting(content)}
       </Container>
     </div>
   );
