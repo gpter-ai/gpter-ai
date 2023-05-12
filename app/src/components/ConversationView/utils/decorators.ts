@@ -17,8 +17,9 @@ export const withCodeHighlighting = (message: string): string => {
           <pre>
             <code class="hljs language-${language[0]}">
               ${
-                hljs.highlight(language[0], chunk.replace(FIRST_WORD_REGEX, ''))
-                  .value
+                hljs.highlight(chunk.replace(FIRST_WORD_REGEX, ''), {
+                  language: language[0],
+                }).value
               }
             </code>
           </pre>
