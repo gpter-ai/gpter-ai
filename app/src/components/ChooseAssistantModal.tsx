@@ -15,6 +15,7 @@ type AssistantsCardsProps = {
 const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
   return (
     <Cards
+      trackBy={(item) => item.title}
       cardDefinition={{
         header: (item) =>
           item.title.charAt(0).toUpperCase() + item.title.slice(1),
@@ -24,8 +25,8 @@ const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
             // eslint-disable-next-line react/no-unstable-nested-components
             content: (item) => (
               <Grid gridDefinition={[{ colspan: 8 }, { colspan: 4 }]}>
-                {item.description}
-                <Box textAlign="right">
+                <div key="descr">{item.description}</div>
+                <Box key="act" textAlign="right">
                   <Button onClick={() => onChooseAssistant(item)}>
                     Create
                   </Button>
