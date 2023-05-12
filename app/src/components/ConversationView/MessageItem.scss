@@ -8,6 +8,11 @@
 	outline: inherit;
 }
 
+.chat-message__text {
+  font-family: inherit;
+  white-space: break-spaces;
+}
+
 .chat-message__code {
   white-space: break-spaces;
 }
