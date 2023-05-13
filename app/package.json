@@ -25,7 +25,7 @@
     "style:fix": "prettier -cw ./src && eslint ./src --fix",
     "style:check": "npm run style:fix && npm run style",
     "prepare": "cd .. && husky install",
-    "test": "NODE_ENV=test jest"
+    "test": "jest"
   },
   "dependencies": {
     "@cloudscape-design/components": "^3.0.248",
