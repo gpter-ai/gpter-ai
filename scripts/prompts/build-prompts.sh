@@ -7,7 +7,7 @@
 REPO_NAME="awesome-chatgpt-prompts"
 REPO_URL="https://github.com/f/$REPO_NAME.git"
 CSV_FILE="$REPO_NAME/prompts.csv"
-JSON_FILE="app/src/data/prompts.json"
+JSON_FILE="app/src/data/prompts/prompts.json"
 
 # Fetch the repository
 git clone $REPO_URL

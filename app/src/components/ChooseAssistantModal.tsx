@@ -1,42 +1,51 @@
-import { FC } from 'react';
-import { Box, Button, Cards, Grid, Modal } from '@cloudscape-design/components';
+import React, { FC, useState } from 'react';
 import {
-  DefaultAssistant,
-  defaultAssistants,
-} from '@/data/prefill/defaultAssistants';
+  Box,
+  Button,
+  Cards,
+  Grid,
+  Modal,
+  SpaceBetween,
+  TextFilter,
+} from '@cloudscape-design/components';
+
 import { useAssistantModal } from '@/context/AssistantModal';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { AssistantFormFields } from '@/data/types';
+import { Prompt, prompts } from '@/data/prompts';
 
 type AssistantsCardsProps = {
-  onChooseAssistant: (item: DefaultAssistant) => void;
+  onChooseAssistant: (item: Prompt) => void;
 };
 
 const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
+  const [filterText, setFilterText] = useState('');
   return (
     <Cards
+      filter={
+        <TextFilter
+          filteringPlaceholder="Find assistants"
+          filteringText={filterText}
+          onChange={(e) => setFilterText(e.detail.filteringText)}
+        />
+      }
       cardDefinition={{
-        header: (item) =>
-          item.title.charAt(0).toUpperCase() + item.title.slice(1),
+        header: (item) => item.act,
         sections: [
           {
             id: 'description',
             // eslint-disable-next-line react/no-unstable-nested-components
             content: (item) => (
-              <Grid gridDefinition={[{ colspan: 8 }, { colspan: 4 }]}>
-                {item.description}
-                <Box textAlign="right">
-                  <Button onClick={() => onChooseAssistant(item)}>
-                    Create
-                  </Button>
-                </Box>
-              </Grid>
+              <SpaceBetween size="m">
+                {item.prompt}
+                <Button onClick={() => onChooseAssistant(item)}>Add</Button>
+              </SpaceBetween>
             ),
           },
         ],
       }}
       cardsPerRow={[{ cards: 1 }]}
-      items={defaultAssistants}
+      items={prompts}
     />
   );
 };
@@ -56,19 +65,20 @@ const ChooseAssistantModal: FC<Props> = ({ visible, setVisible }) => {
     setVisible(false);
   };
 
-  const onChooseAssistant = (item: DefaultAssistant): void =>
+  const onChooseAssistant = (item: Prompt): void =>
     assistantModal.openModal({
       onSubmit: onAssistantModalSubmit,
       mode: 'create',
-      initData: { name: item.name, prompt: item.prompt },
+      initData: { name: item.act, prompt: item.prompt },
     });
 
   return (
     <Modal
+      size="large"
       onDismiss={() => setVisible(false)}
       visible={visible}
       closeAriaLabel="Close modal"
-      header="Choose an assistant"
+      header="Add an assistant"
     >
       <AssistantsCards onChooseAssistant={onChooseAssistant} />
     </Modal>
