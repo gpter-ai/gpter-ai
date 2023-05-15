@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.prod.json && vite build",
+    "update-prompts": "(cd .. && sh scripts/prompts/build-prompts.sh)",
     "release": "electron-builder",
     "watch": "tsc --watch",
     "preview": "vite preview",
