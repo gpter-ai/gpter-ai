@@ -13,6 +13,7 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
+import { useKeysProvider } from '@/hooks/useKeysProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
@@ -37,6 +38,7 @@ const Chat: FC<Props> = ({ assistant }) => {
 
   const storageProvider = useStorageProvider();
   const { chatService } = useChatService(storageProvider);
+  const { shiftPressed } = useKeysProvider();
 
   const fetchHistory = (): Promise<ChatMessage[]> => {
     return storageProvider
@@ -136,6 +138,19 @@ const Chat: FC<Props> = ({ assistant }) => {
     </Button>
   );
 
+  const handleChatKeyDown = (
+    event: CustomEvent<InputProps.KeyDetail>,
+  ): void => {
+    if (receivingInProgress || shiftPressed) {
+      return;
+    }
+
+    if (event.detail.key === 'Enter') {
+      event.preventDefault();
+      onMessageSubmit();
+    }
+  };
+
   return (
     <Container
       header={
@@ -150,6 +165,7 @@ const Chat: FC<Props> = ({ assistant }) => {
           <ConversationView messages={history} />
           <FormField errorText={inputError} stretch label="Type a query">
             <Textarea
+              onKeyDown={handleChatKeyDown}
               value={text}
               onChange={onValueChange}
               rows={2}
