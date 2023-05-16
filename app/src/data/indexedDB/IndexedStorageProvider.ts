@@ -42,7 +42,7 @@ export class IndexedStorageProvider implements StorageProvider {
   }
 
   updateAssistant(key: string, data: AssistantFormFields): void {
-    this.#db.assistants.update(key, { ...data });
+    this.#db.assistants.update(key, { ...data, lastUpdate: new Date() });
   }
 
   async deleteAssistant(key: string): Promise<void> {

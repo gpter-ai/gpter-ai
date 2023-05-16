@@ -65,7 +65,7 @@ export class ChatService {
     const promptMessage: ChatMessage = {
       role: 'system',
       content: assistant.prompt,
-      timestamp: Number(assistant.creation_date) ?? 0,
+      timestamp: Number(assistant.creationDate) ?? 0,
       finished: true,
     };
 
@@ -76,7 +76,11 @@ export class ChatService {
     const timeStamps = chunks
       .filter((x) => x.role === 'user')
       .map((chunk) => chunk.timestamp);
-    const sessionStartDate = getSessionStartDate(timeStamps);
+
+    const sessionStartDate = Math.max(
+      getSessionStartDate(timeStamps),
+      assistant.lastPromptUpdate ? assistant.lastPromptUpdate.getTime() : 0,
+    );
 
     const messages = this.convertChunksToMessages(
       chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),

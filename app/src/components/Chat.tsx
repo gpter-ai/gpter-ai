@@ -75,7 +75,15 @@ const Chat: FC<Props> = ({ assistant }) => {
   const assistantModal = useAssistantModal();
 
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
-    storageProvider.updateAssistant(assistant.id, props);
+    const lastPromptUpdate =
+      props.prompt === assistant.prompt
+        ? assistant.lastPromptUpdate
+        : new Date();
+
+    storageProvider.updateAssistant(assistant.id, {
+      ...props,
+      lastPromptUpdate,
+    });
   };
 
   const onEditAssistantClick = (): void =>

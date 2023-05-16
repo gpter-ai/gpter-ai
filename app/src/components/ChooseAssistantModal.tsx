@@ -20,7 +20,7 @@ const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
   const [filterText, setFilterText] = useState('');
   return (
     <Cards
-      trackBy={(item) => item.prompt}
+      trackBy="prompt"
       filter={
         <TextFilter
           filteringPlaceholder="Find assistants"
@@ -36,7 +36,7 @@ const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
             // eslint-disable-next-line react/no-unstable-nested-components
             content: (item) => (
               <SpaceBetween size="m">
-                {item.prompt}
+                <div key={item.act}>{item.prompt}</div>
                 <Button onClick={() => onChooseAssistant(item)}>Add</Button>
               </SpaceBetween>
             ),
