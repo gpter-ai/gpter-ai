@@ -170,7 +170,7 @@ const Chat: FC<Props> = ({ assistant }) => {
               onChange={onValueChange}
               rows={2}
               autoFocus
-              disabled={receivingInProgress}
+              readOnly={receivingInProgress}
             />
           </FormField>
           <Box textAlign="right">
