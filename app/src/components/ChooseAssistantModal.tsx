@@ -25,7 +25,7 @@ const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
         <TextFilter
           filteringPlaceholder="Find assistants"
           filteringText={filterText}
-          onChange={(e) => setFilterText(e.detail.filteringText)}
+          onChange={(e) => setFilterText(e.detail.filteringText.toLowerCase())}
         />
       }
       cardDefinition={{
@@ -44,7 +44,7 @@ const AssistantsCards: FC<AssistantsCardsProps> = ({ onChooseAssistant }) => {
         ],
       }}
       cardsPerRow={[{ cards: 1 }]}
-      items={prompts}
+      items={prompts.filter((p) => p.act.toLowerCase().includes(filterText))}
     />
   );
 };

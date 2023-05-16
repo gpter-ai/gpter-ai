@@ -42,6 +42,7 @@ const HelpModal: FC<Props> = ({ visible, setVisible }) => {
           <a
             target="_blank"
             href="https://platform.openai.com/account/api-keys"
+            rel="noreferrer"
           >
             OpenAI page
           </a>
@@ -71,7 +72,7 @@ const HelpModal: FC<Props> = ({ visible, setVisible }) => {
         We do not charge you any fees. However, the requests you send actually
         go to an OpenAI model and you need to pay to OpenAI for tokens you send
         and receive. Check the exact price at their{' '}
-        <a target="_blank" href="https://openai.com/pricing">
+        <a target="_blank" href="https://openai.com/pricing" rel="noreferrer">
           {' '}
           pricing page <Icon name="external" size="small" />
         </a>

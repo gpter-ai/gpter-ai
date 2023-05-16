@@ -1,11 +1,11 @@
 .chat-message__code-copy {
-	background: none;
-	color: inherit;
-	border: none;
-	padding: 0;
-	font: inherit;
-	cursor: pointer;
-	outline: inherit;
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
 }
 
 .chat-message__text {
@@ -18,14 +18,14 @@
 }
 
 .chat-message__code-copy:active {
-  color: rgba(155,155,155);
+  color: rgba(155, 155, 155);
 }
 
 .chat-message__code-language {
-  color: rgba(217,217,227);
-  font-size: .75rem;
+  color: rgba(217, 217, 227);
+  font-size: 0.75rem;
   padding: 0.5rem 1rem;
-  background-color: rgba(52,53,65);
+  background-color: rgba(52, 53, 65);
   display: flex;
   justify-content: space-between;
 }
