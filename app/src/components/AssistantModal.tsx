@@ -127,7 +127,7 @@ const AssistantModal: FC<Props> = ({
           errorText={promptError}
           description="Enter 20 to 200 characters"
         >
-          <Textarea value={prompt} onChange={onChangePrompt} />
+          <Textarea value={prompt} onChange={onChangePrompt} rows={10} />
         </FormField>
       </SpaceBetween>
       <DangerModal

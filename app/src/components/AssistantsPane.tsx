@@ -1,7 +1,7 @@
-import { FC, useState } from 'react';
+import React, { FC, useState } from 'react';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
-import { Box, Container } from '@cloudscape-design/components';
+import { Box, Container, Header } from '@cloudscape-design/components';
 import { Assistant } from '@/data/types';
 import { Nullable } from '@/types';
 import ChooseAssistantModal from './ChooseAssistantModal';
@@ -23,7 +23,7 @@ const AssistantsPane: FC<Props> = ({
     useState<boolean>(false);
 
   return (
-    <Container>
+    <Container header={<Header>Assistants</Header>}>
       <SpaceBetween direction="vertical" size="m">
         <div className="assistantsPaneButtonWrapper">
           <Button
@@ -31,7 +31,7 @@ const AssistantsPane: FC<Props> = ({
             onClick={() => setAssistantSelectionModalVisible(true)}
             variant="link"
           >
-            Get New Assistant
+            Add New Assistant
           </Button>
         </div>
         {assistants.length > 0 && <hr />}
