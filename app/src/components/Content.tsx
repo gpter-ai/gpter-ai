@@ -1,13 +1,7 @@
 import ContentLayout from '@cloudscape-design/components/content-layout';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
-import {
-  Box,
-  Button,
-  Grid,
-  GridProps,
-  Toggle,
-} from '@cloudscape-design/components';
+import { Box, Grid } from '@cloudscape-design/components';
 import { FC, useContext, useEffect, useState } from 'react';
 import AssistantsPane from './AssistantsPane';
 import Chat from './Chat';
@@ -18,6 +12,7 @@ import { UserConfigContext } from '@/context/UserConfig';
 import ConfigModal from './ConfigModal/ConfigModal';
 import { useAssistants } from '@/hooks/useAssistants';
 import HelpModal from './HelpModal';
+import HeaderActions from './HeaderActions';
 
 const Content: FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
@@ -39,79 +34,40 @@ const Content: FC = () => {
     }
   }, [userConfig?.apiKey, configLoading]);
 
-  const gridDefinition: ReadonlyArray<GridProps.ElementDefinition> =
-    selectedAssistant
-      ? [
-          {
-            colspan: {
-              default: 4,
-              s: 3,
-            },
-          },
-          {
-            colspan: {
-              default: 8,
-              s: 9,
-            },
-          },
-        ]
-      : [
-          {
-            colspan: {
-              default: 4,
-              s: 3,
-            },
-          },
-        ];
+  const gridDefinition = [
+    {
+      colspan: {
+        s: 4,
+      },
+    },
+    {
+      colspan: {
+        s: 8,
+      },
+    },
+  ];
 
-  const onConfigModalConfirm = (config: Partial<UserConfig>): void => {
-    // eslint-disable-next-line prefer-object-spread
-    const newConfig = Object.assign({}, userConfig, config);
+  const onConfigModalConfirm = (config: UserConfig): void => {
+    const newConfig = { ...userConfig, ...config };
     setUserConfig(newConfig);
     storeUserConfig(newConfig);
     setConfigModalVisible(false);
   };
-
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('awsui-dark-mode');
-    } else {
-      document.body.classList.remove('awsui-dark-mode');
-    }
-  }, [darkMode]);
-
-  const headerActions = (
-    <SpaceBetween direction="horizontal" size="xs">
-      <Button onClick={() => setDarkMode((dm) => !dm)}>
-        <Toggle checked={darkMode}>Dark mode</Toggle>
-      </Button>
-      <Button
-        iconName="settings"
-        onClick={(): void => {
-          setConfigModalVisible(true);
-        }}
-      >
-        Configure
-      </Button>
-      <Button
-        iconName="status-info"
-        onClick={(): void => {
-          setHelpModalVisible(true);
-        }}
-      >
-        Help
-      </Button>
-    </SpaceBetween>
-  );
 
   return (
     <ContentLayout
       header={
         <Box margin={{ top: 'm' }}>
           <SpaceBetween size="m">
-            <Header actions={headerActions} variant="h1">
+            <Header
+              actions={
+                <HeaderActions
+                  setConfigModalVisible={setConfigModalVisible}
+                  setHelpModalVisible={setHelpModalVisible}
+                />
+              }
+              variant="h1"
+            >
               GPTer
             </Header>
           </SpaceBetween>

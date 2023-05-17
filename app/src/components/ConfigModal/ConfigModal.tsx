@@ -14,7 +14,7 @@ import { OPENAI_API_KEY_PATTERN } from '../constants';
 type Props = {
   initValues: Partial<UserConfig>;
   visible: boolean;
-  onConfirm: (values: Partial<UserConfig>) => void;
+  onConfirm: (values: UserConfig) => void;
 };
 
 const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
