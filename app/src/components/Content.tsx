@@ -1,7 +1,13 @@
 import ContentLayout from '@cloudscape-design/components/content-layout';
 import Header from '@cloudscape-design/components/header';
 import SpaceBetween from '@cloudscape-design/components/space-between';
-import { Box, Button, Grid, GridProps } from '@cloudscape-design/components';
+import {
+  Box,
+  Button,
+  Grid,
+  GridProps,
+  Toggle,
+} from '@cloudscape-design/components';
 import { FC, useContext, useEffect, useState } from 'react';
 import AssistantsPane from './AssistantsPane';
 import Chat from './Chat';
@@ -66,8 +72,21 @@ const Content: FC = () => {
     setConfigModalVisible(false);
   };
 
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('awsui-dark-mode');
+    } else {
+      document.body.classList.remove('awsui-dark-mode');
+    }
+  }, [darkMode]);
+
   const headerActions = (
     <SpaceBetween direction="horizontal" size="xs">
+      <Button onClick={() => setDarkMode((dm) => !dm)}>
+        <Toggle checked={darkMode}>Dark mode</Toggle>
+      </Button>
       <Button
         iconName="settings"
         onClick={(): void => {
