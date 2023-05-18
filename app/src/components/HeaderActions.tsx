@@ -22,7 +22,7 @@ const HeaderActions: FC<Props> = ({
 
   return (
     <SpaceBetween direction="horizontal" size="xs">
-      <Button onClick={() => setDarkMode((dm) => !dm)}>
+      <Button variant="link" onClick={() => setDarkMode((dm) => !dm)}>
         <Toggle checked={darkMode}>Dark mode</Toggle>
       </Button>
       <Button

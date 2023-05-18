@@ -10,6 +10,7 @@ import { FC, useEffect, useState } from 'react';
 import { UserConfig } from '@/data/types';
 import { useApiService } from '@/hooks/useApiService';
 import { OPENAI_API_KEY_PATTERN } from '../constants';
+import HelpModal from '../HelpModal';
 
 type Props = {
   initValues: Partial<UserConfig>;
@@ -21,6 +22,8 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
   const [apiKey, setApiKey] = useState<string>('');
   const [validatedApiKey, setValidatedApiKey] = useState<string>('');
   const [apiKeyError, setApiKeyError] = useState<string>('');
+
+  const [helpModalVisible, setHelpModalVisible] = useState<boolean>(false);
 
   useEffect(() => {
     setApiKey(initValues?.apiKey || '');
@@ -95,6 +98,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
       footer={
         <Box float="right">
           <SpaceBetween direction="horizontal" size="xs">
+            <Button onClick={() => setHelpModalVisible(true)}>Help</Button>
             {apiKeyNeedsValidation && apiKeyValid && (
               <Button onClick={onValidateApiKey}>Validate API Key</Button>
             )}
@@ -123,6 +127,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
           }}
         />
       </FormField>
+      <HelpModal visible={helpModalVisible} setVisible={setHelpModalVisible} />
     </Modal>
   );
 };
