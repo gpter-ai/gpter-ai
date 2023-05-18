@@ -102,7 +102,7 @@ export class ChatService {
     });
   }
 
-  public async onMessageSubmit(
+  public async submitUserMessage(
     message: string,
     assistantId: string,
     onError?: (error: ApiError) => void,
@@ -112,7 +112,6 @@ export class ChatService {
       role: 'user',
       assistantId,
     };
-
     const userDoneChunk: PartialChunkData = {
       content: { kind: ChunkContentKind.DONE },
       role: 'user',
@@ -122,7 +121,20 @@ export class ChatService {
     // @TODO - check what happens in case of multiple user messages in a row (e.g. due to errors)
     await this.storageProvider.createChunk(userMessageChunk);
     await this.storageProvider.createChunk(userDoneChunk);
+    await this.onMessageSubmit(assistantId, onError);
+  }
 
+  public async submitPromptOnly(
+    assistantId: string,
+    onError?: (error: ApiError) => void,
+  ): Promise<void> {
+    await this.onMessageSubmit(assistantId, onError);
+  }
+
+  private async onMessageSubmit(
+    assistantId: string,
+    onError?: (error: ApiError) => void,
+  ): Promise<void> {
     const messages = await this.getSessionHistory(assistantId);
 
     const processResponse = (response: ApiResponse): void => {

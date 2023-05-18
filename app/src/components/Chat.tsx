@@ -73,7 +73,9 @@ const Chat: FC<Props> = ({ assistant }) => {
 
   const assistantModal = useAssistantModal();
 
-  const onAssistantModalSubmit = (props: AssistantFormFields): void => {
+  const onAssistantModalSubmit = async (
+    props: AssistantFormFields,
+  ): Promise<void> => {
     const lastPromptUpdate =
       props.prompt === assistant.prompt
         ? assistant.lastPromptUpdate
@@ -83,6 +85,8 @@ const Chat: FC<Props> = ({ assistant }) => {
       ...props,
       lastPromptUpdate,
     });
+
+    await chatService.submitPromptOnly(assistant.id, onApiError);
   };
 
   const onEditAssistantClick = (): void =>
@@ -126,7 +130,7 @@ const Chat: FC<Props> = ({ assistant }) => {
     }
 
     setText('');
-    await chatService.onMessageSubmit(`${text}`, assistant.id, onApiError);
+    await chatService.submitUserMessage(`${text}`, assistant.id, onApiError);
   };
 
   const onStopButtonClick = (): void => {
