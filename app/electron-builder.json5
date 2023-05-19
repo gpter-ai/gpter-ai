@@ -10,7 +10,7 @@
   files: ['dist-electron', 'dist'],
   mac: {
     artifactName: '${productName}_${version}.${ext}',
-    target: ['dmg', 'zip'],
+    target: ['dmg'],
   },
   linux: {
     artifactName: '${productName}_${version}.${ext}',
