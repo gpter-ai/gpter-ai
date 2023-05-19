@@ -2,25 +2,17 @@ import React, { FC, useState } from 'react';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
 import { Box, Container, Header } from '@cloudscape-design/components';
-import { Assistant } from '@/data/types';
-import { Nullable } from '@/types';
 import ChooseAssistantModal from './ChooseAssistantModal';
 
 import './AssistantsPane.scss';
+import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
 
-type Props = {
-  onSelectedAssistantIdChange: (id: string) => void;
-  selectedAssistantId: Nullable<string>;
-  assistants: Assistant[];
-};
-
-const AssistantsPane: FC<Props> = ({
-  onSelectedAssistantIdChange,
-  selectedAssistantId,
-  assistants,
-}) => {
+const AssistantsPane: FC<object> = () => {
   const [assistantSelectionModalVisible, setAssistantSelectionModalVisible] =
     useState<boolean>(false);
+
+  const { assistants, selectedAssistant, selectAssistantById } =
+    useAssistantsProvider();
 
   return (
     <Container header={<Header>Assistants</Header>}>
@@ -38,9 +30,9 @@ const AssistantsPane: FC<Props> = ({
         {assistants.map((assistant) => (
           <div key={assistant.id} className="assistantsPaneButtonWrapper">
             <Button
-              onClick={() => onSelectedAssistantIdChange(assistant.id)}
+              onClick={() => selectAssistantById(assistant.id)}
               variant={
-                assistant.id === selectedAssistantId ? 'primary' : 'normal'
+                assistant.id === selectedAssistant?.id ? 'primary' : 'normal'
               }
             >
               <Box textAlign="center" color="inherit">

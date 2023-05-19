@@ -10,9 +10,9 @@ import {
 export interface StorageProvider {
   getAssistants(): Promise<Assistant[]>;
   getAssistant(key: string): Promise<Nullable<Assistant>>;
-  createAssistant(data: AssistantFormFields): void;
+  createAssistant(data: AssistantFormFields): Promise<Assistant>;
   createChunk(data: PartialChunkData): void;
-  updateAssistant(key: string, data: AssistantFormFields): void;
+  updateAssistant(key: string, data: Partial<AssistantFormFields>): void;
   deleteAssistant(key: string): Promise<void>;
   getChunksByAssistant(assistantId: string): Promise<Chunk[]>;
   getChunksByFilter(filter: (chunk: Chunk) => boolean): Promise<Chunk[]>;

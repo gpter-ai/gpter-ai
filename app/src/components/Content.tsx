@@ -5,14 +5,13 @@ import { Box, Grid } from '@cloudscape-design/components';
 import { FC, useContext, useEffect, useState } from 'react';
 import AssistantsPane from './AssistantsPane';
 import Chat from './Chat';
-import { Assistant, UserConfig } from '@/data/types';
+import { UserConfig } from '@/data/types';
 import AssistantModalProvider from '@/context/AssistantModal';
-import { Nullable } from '@/types';
 import { UserConfigContext } from '@/context/UserConfig';
 import ConfigModal from './ConfigModal/ConfigModal';
-import { useAssistants } from '@/hooks/useAssistants';
 import HelpModal from './HelpModal';
 import HeaderActions from './HeaderActions';
+import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
 
 const Content: FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState<boolean>(false);
@@ -20,13 +19,7 @@ const Content: FC = () => {
   const { userConfig, setUserConfig, storeUserConfig, configLoading } =
     useContext(UserConfigContext);
 
-  const { assistants } = useAssistants();
-
-  const [selectedAssistantId, setSelectedAssistantId] =
-    useState<Nullable<string>>();
-
-  const selectedAssistant: Nullable<Assistant> =
-    assistants.find((a) => a.id === selectedAssistantId) ?? assistants[0];
+  const { selectedAssistant } = useAssistantsProvider();
 
   useEffect(() => {
     if (!configLoading && !userConfig?.apiKey) {
@@ -76,12 +69,8 @@ const Content: FC = () => {
     >
       <AssistantModalProvider>
         <Grid gridDefinition={gridDefinition}>
-          <AssistantsPane
-            onSelectedAssistantIdChange={setSelectedAssistantId}
-            selectedAssistantId={selectedAssistant?.id}
-            assistants={assistants}
-          />
-          {selectedAssistant && <Chat assistant={selectedAssistant} />}
+          <AssistantsPane />
+          {selectedAssistant && <Chat />}
         </Grid>
       </AssistantModalProvider>
       <ConfigModal

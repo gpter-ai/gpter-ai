@@ -118,9 +118,13 @@ export class ChatService {
       assistantId,
     };
 
-    // @TODO - check what happens in case of multiple user messages in a row (e.g. due to errors)
     await this.storageProvider.createChunk(userMessageChunk);
     await this.storageProvider.createChunk(userDoneChunk);
+
+    await this.storageProvider.updateAssistant(assistantId, {
+      lastMessageDate: new Date(),
+    });
+
     await this.onMessageSubmit(assistantId, onError);
   }
 
@@ -170,6 +174,10 @@ export class ChatService {
         processResponse,
         this.abortController.signal,
       );
+
+      await this.storageProvider.updateAssistant(assistantId, {
+        lastMessageDate: new Date(),
+      });
     } catch (error) {
       if (error instanceof ApiError) {
         onError && onError(error as ApiError);

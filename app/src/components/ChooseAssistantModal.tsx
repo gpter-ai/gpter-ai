@@ -11,6 +11,7 @@ import { useAssistantModal } from '@/context/AssistantModal';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { AssistantFormFields } from '@/data/types';
 import { Prompt, prompts } from '@/data/prompts';
+import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
 
 type AssistantsCardsProps = {
   onChooseAssistant: (item: Prompt) => void;
@@ -59,9 +60,13 @@ const ChooseAssistantModal: FC<Props> = ({ visible, setVisible }) => {
 
   const storageProvider = useStorageProvider();
 
+  const { setSelectedAssistant } = useAssistantsProvider();
+
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
-    storageProvider.createAssistant(props);
-    setVisible(false);
+    storageProvider
+      .createAssistant(props)
+      .then(setSelectedAssistant)
+      .then(() => setVisible(false));
   };
 
   const onChooseAssistant = (item: Prompt): void =>

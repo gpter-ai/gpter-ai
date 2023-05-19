@@ -26,12 +26,15 @@ export class IndexedStorageProvider implements StorageProvider {
     return this.#db.assistants.get(key);
   }
 
-  createAssistant(data: AssistantFormFields): void {
+  createAssistant(data: AssistantFormFields): Promise<Assistant> {
     // @TODO - think about building in validation layer
-    this.#db.assistants.add({
+    const assistant = {
       ...data,
       id: generateUUID(),
-    });
+      creationDate: new Date(),
+    };
+
+    return this.#db.assistants.add(assistant).then(() => assistant);
   }
 
   createChunk(data: PartialChunkData): void {
@@ -41,7 +44,7 @@ export class IndexedStorageProvider implements StorageProvider {
     } as Chunk);
   }
 
-  updateAssistant(key: string, data: AssistantFormFields): void {
+  updateAssistant(key: string, data: Partial<AssistantFormFields>): void {
     this.#db.assistants.update(key, { ...data, lastUpdate: new Date() });
   }
 

@@ -14,7 +14,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { useKeysProvider } from '@/hooks/useKeysProvider';
-import { Assistant, AssistantFormFields } from '@/data/types';
+import { AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
 import { useChatService } from '@/data/ChatService';
@@ -23,12 +23,10 @@ import { ConversationView } from '@/components/ConversationView';
 
 import './Chat.scss';
 import ApiError from '@/api/error/ApiError';
+import { assertNonNullable } from '@/utils/asserts';
+import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
 
-type Props = {
-  assistant: Assistant;
-};
-
-const Chat: FC<Props> = ({ assistant }) => {
+const Chat: FC<object> = () => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
   const [receivingInProgress, setReceivingInProgress] = useState(false);
@@ -40,15 +38,19 @@ const Chat: FC<Props> = ({ assistant }) => {
   const { chatService } = useChatService(storageProvider);
   const { shiftPressed } = useKeysProvider();
 
+  const { selectedAssistant, selectDefaultAssistant } = useAssistantsProvider();
+
+  assertNonNullable(selectedAssistant);
+
   const fetchHistory = (): Promise<ChatMessage[]> => {
     return storageProvider
-      .getChunksByAssistant(assistant.id)
+      .getChunksByAssistant(selectedAssistant.id)
       .then(chatService.convertChunksToMessages);
   };
 
   const history: ChatMessage[] = useLiveQuery(
     fetchHistory,
-    [storageProvider, assistant.id],
+    [storageProvider, selectedAssistant.id],
     [],
   );
 
@@ -62,7 +64,7 @@ const Chat: FC<Props> = ({ assistant }) => {
         !lastMessage.finished
       ),
     );
-  }, [history, assistant.id]);
+  }, [history, selectedAssistant.id]);
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
@@ -77,24 +79,24 @@ const Chat: FC<Props> = ({ assistant }) => {
     props: AssistantFormFields,
   ): Promise<void> => {
     const lastPromptUpdate =
-      props.prompt === assistant.prompt
-        ? assistant.lastPromptUpdate
+      props.prompt === selectedAssistant.prompt
+        ? selectedAssistant.lastPromptUpdate
         : new Date();
 
-    storageProvider.updateAssistant(assistant.id, {
+    storageProvider.updateAssistant(selectedAssistant.id, {
       ...props,
       lastPromptUpdate,
     });
 
-    await chatService.submitPromptOnly(assistant.id, onApiError);
+    await chatService.submitPromptOnly(selectedAssistant.id, onApiError);
   };
 
   const onEditAssistantClick = (): void =>
     assistantModal.openModal({
       onSubmit: onAssistantModalSubmit,
       initData: {
-        name: assistant.name,
-        prompt: assistant.prompt,
+        name: selectedAssistant.name,
+        prompt: selectedAssistant.prompt,
       },
       mode: 'edit',
     });
@@ -104,7 +106,8 @@ const Chat: FC<Props> = ({ assistant }) => {
   };
 
   const removeAssistant = async (): Promise<void> => {
-    await storageProvider.deleteAssistant(assistant.id);
+    await storageProvider.deleteAssistant(selectedAssistant.id);
+    selectDefaultAssistant(selectedAssistant.id);
     setRemovalModalVisible(false);
   };
 
@@ -130,11 +133,15 @@ const Chat: FC<Props> = ({ assistant }) => {
     }
 
     setText('');
-    await chatService.submitUserMessage(`${text}`, assistant.id, onApiError);
+    await chatService.submitUserMessage(
+      `${text}`,
+      selectedAssistant.id,
+      onApiError,
+    );
   };
 
   const onStopButtonClick = (): void => {
-    chatService.abortEventsReceiving(assistant.id);
+    chatService.abortEventsReceiving(selectedAssistant.id);
   };
 
   const SubmitButton = (
@@ -166,7 +173,7 @@ const Chat: FC<Props> = ({ assistant }) => {
     <Container
       header={
         <Header actions={headerActions} variant="h2">
-          {assistant.name}
+          {selectedAssistant.name}
         </Header>
       }
     >
@@ -191,8 +198,8 @@ const Chat: FC<Props> = ({ assistant }) => {
       </div>
       <DangerModal
         visible={removalModalVisible}
-        text={`You are about to remove ${assistant.name}. Are you sure?`}
-        header={`Removing ${assistant.name}`}
+        text={`You are about to remove ${selectedAssistant.name}. Are you sure?`}
+        header={`Removing ${selectedAssistant.name}`}
         onCancel={(): void => setRemovalModalVisible(false)}
         onConfirm={removeAssistant}
       />
