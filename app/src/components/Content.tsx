@@ -30,12 +30,12 @@ const Content: FC = () => {
   const gridDefinition = [
     {
       colspan: {
-        s: 4,
+        default: 4,
       },
     },
     {
       colspan: {
-        s: 8,
+        default: 8,
       },
     },
   ];
