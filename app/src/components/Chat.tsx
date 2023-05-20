@@ -145,13 +145,22 @@ const Chat: FC<object> = () => {
   };
 
   const SubmitButton = (
-    <Button variant="primary" onClick={onMessageSubmit}>
+    <Button
+      variant="primary"
+      iconName="angle-right"
+      iconAlign="right"
+      onClick={onMessageSubmit}
+    >
       Submit
     </Button>
   );
 
   const StopButton = (
-    <Button iconName="status-negative" onClick={onStopButtonClick}>
+    <Button
+      iconName="status-negative"
+      iconAlign="right"
+      onClick={onStopButtonClick}
+    >
       Stop
     </Button>
   );
@@ -179,9 +188,9 @@ const Chat: FC<object> = () => {
     >
       <div ref={containerRef}>
         <div className="header__line" />
-        <SpaceBetween size="m" direction="vertical">
-          <ConversationView messages={history} />
-          <FormField errorText={inputError} stretch label="Type a query">
+        <ConversationView messages={history} />
+        <FormField errorText={inputError} stretch label="Type a query">
+          <div className="chat__textarea-wrapper">
             <Textarea
               onKeyDown={handleChatKeyDown}
               value={text}
@@ -190,11 +199,11 @@ const Chat: FC<object> = () => {
               autoFocus
               readOnly={receivingInProgress}
             />
-          </FormField>
-          <Box textAlign="right">
-            {receivingInProgress ? StopButton : SubmitButton}
-          </Box>
-        </SpaceBetween>
+            <div className="chat__main-action">
+              {receivingInProgress ? StopButton : SubmitButton}
+            </div>
+          </div>
+        </FormField>
       </div>
       <DangerModal
         visible={removalModalVisible}
