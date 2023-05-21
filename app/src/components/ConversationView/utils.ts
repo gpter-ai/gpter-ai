@@ -9,16 +9,16 @@ export const chatMessagesToChatItems = (
     chatMessages.map((x) => x.timestamp),
   );
 
-  const sessionBreakIndex = chatMessages.findLastIndex(
-    (msg) => msg.timestamp < sessionStartDate,
+  const sessionBreakIndex = chatMessages.findIndex(
+    (msg) => msg.timestamp >= sessionStartDate,
   );
 
   return chatMessages.reduce((acc, message, idx) => {
-    acc.push({ type: ChatItemType.Message, message });
-
     if (idx === sessionBreakIndex) {
       acc.push({ type: ChatItemType.SessionBreak });
     }
+
+    acc.push({ type: ChatItemType.Message, message });
 
     return acc;
   }, [] as ChatItem[]);
