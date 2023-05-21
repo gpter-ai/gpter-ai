@@ -43,6 +43,8 @@
     "highlight.js": "^11.8.0",
     "husky": "^8.0.3",
     "lodash": "^4.17.21",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

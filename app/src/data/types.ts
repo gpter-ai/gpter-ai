@@ -4,12 +4,12 @@ export type Assistant = {
   prompt: string;
   creationDate?: Date;
   lastPromptUpdate?: Date;
-  lastMessageDate?: Date;
+  order: number;
 };
 
 export type AssistantFormFields = Pick<
   Assistant,
-  'name' | 'prompt' | 'lastPromptUpdate' | 'lastMessageDate'
+  'name' | 'prompt' | 'lastPromptUpdate'
 >;
 
 export type ChatGptRole = 'user' | 'assistant' | 'system';

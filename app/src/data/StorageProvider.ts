@@ -14,6 +14,7 @@ export interface StorageProvider {
   createChunk(data: PartialChunkData): void;
   updateAssistant(key: string, data: Partial<AssistantFormFields>): void;
   deleteAssistant(key: string): Promise<void>;
+  reorderAssistants(firstId: string, secondId: string): Promise<void>;
   getChunksByAssistant(assistantId: string): Promise<Chunk[]>;
   getChunksByFilter(filter: (chunk: Chunk) => boolean): Promise<Chunk[]>;
   putUserConfig(config: UserConfig): void;

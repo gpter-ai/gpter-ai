@@ -18,6 +18,24 @@ export class IndexedStorageProvider implements StorageProvider {
     this.#db = new GPTerDexie();
   }
 
+  async reorderAssistants(firstId: string, secondId: string): Promise<void> {
+    this.#db.transaction('rw', this.#db.assistants, async () => {
+      const firstAssistant = await this.#db.assistants.get(firstId);
+      const secondAssistant = await this.#db.assistants.get(secondId);
+
+      if (!firstAssistant || !secondAssistant) {
+        return;
+      }
+
+      await this.#db.assistants.update(firstId, {
+        order: secondAssistant.order,
+      });
+      await this.#db.assistants.update(secondId, {
+        order: firstAssistant.order,
+      });
+    });
+  }
+
   getAssistants(): Promise<Assistant[]> {
     return this.#db.assistants.toArray();
   }
@@ -26,12 +44,13 @@ export class IndexedStorageProvider implements StorageProvider {
     return this.#db.assistants.get(key);
   }
 
-  createAssistant(data: AssistantFormFields): Promise<Assistant> {
+  async createAssistant(data: AssistantFormFields): Promise<Assistant> {
     // @TODO - think about building in validation layer
-    const assistant = {
+    const assistant: Assistant = {
       ...data,
       id: generateUUID(),
       creationDate: new Date(),
+      order: await this.#db.assistants.count(),
     };
 
     return this.#db.assistants.add(assistant).then(() => assistant);

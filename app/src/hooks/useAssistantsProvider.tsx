@@ -20,6 +20,7 @@ type UseAssistantsContextValue = {
   selectDefaultAssistant: (omitId?: string) => void;
   selectedAssistant: Nullable<Assistant>;
   setSelectedAssistant: (assistant: Nullable<Assistant>) => void;
+  reorderAssistants: (dragId: string, hoverId: string) => void;
 };
 
 const AssistantsContext = createContext<UseAssistantsContextValue>(
@@ -72,6 +73,13 @@ export const AssistantsProvider: FC<Props> = ({ children }) => {
     [assistants],
   );
 
+  const reorderAssistants = useCallback(
+    (dragId: string, hoverId: string): void => {
+      storageProvider.reorderAssistants(dragId, hoverId);
+    },
+    [storageProvider],
+  );
+
   const contextValue: UseAssistantsContextValue = useMemo(
     () => ({
       assistants,
@@ -79,12 +87,14 @@ export const AssistantsProvider: FC<Props> = ({ children }) => {
       selectDefaultAssistant,
       selectedAssistant,
       setSelectedAssistant,
+      reorderAssistants,
     }),
     [
       assistants,
       selectAssistantById,
       selectDefaultAssistant,
       selectedAssistant,
+      reorderAssistants,
     ],
   );
 

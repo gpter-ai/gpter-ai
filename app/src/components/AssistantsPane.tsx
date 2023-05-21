@@ -1,18 +1,20 @@
-import React, { FC, useState } from 'react';
+import { FC, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
-import { Box, Container, Header } from '@cloudscape-design/components';
+import { Container, Header } from '@cloudscape-design/components';
 import ChooseAssistantModal from './ChooseAssistantModal';
 
 import './AssistantsPane.scss';
 import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
+import DraggableAssistant from './DraggableAssistant';
 
 const AssistantsPane: FC<object> = () => {
   const [assistantSelectionModalVisible, setAssistantSelectionModalVisible] =
     useState<boolean>(false);
 
-  const { assistants, selectedAssistant, selectAssistantById } =
-    useAssistantsProvider();
+  const { assistants } = useAssistantsProvider();
 
   return (
     <Container header={<Header>Assistants</Header>}>
@@ -26,21 +28,16 @@ const AssistantsPane: FC<object> = () => {
             Add New Assistant
           </Button>
         </div>
-        {assistants.length > 0 && <hr />}
-        {assistants.map((assistant) => (
-          <div key={assistant.id} className="assistantsPaneButtonWrapper">
-            <Button
-              onClick={() => selectAssistantById(assistant.id)}
-              variant={
-                assistant.id === selectedAssistant?.id ? 'primary' : 'normal'
-              }
-            >
-              <Box textAlign="center" color="inherit">
-                {assistant.name}
-              </Box>
-            </Button>
-          </div>
-        ))}
+        {assistants.length > 0 && (
+          <DndProvider backend={HTML5Backend}>
+            <SpaceBetween direction="vertical" size="m">
+              <hr />
+              {assistants.map((assistant) => (
+                <DraggableAssistant key={assistant.id} assistant={assistant} />
+              ))}
+            </SpaceBetween>
+          </DndProvider>
+        )}
       </SpaceBetween>
       <ChooseAssistantModal
         visible={assistantSelectionModalVisible}
