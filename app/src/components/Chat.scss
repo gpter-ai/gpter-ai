@@ -5,12 +5,39 @@
 }
 
 .chat__textarea-wrapper {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 1rem;
+  margin: 0;
 }
 
-.chat__main-action {
-  position: absolute;
-  top: calc(100% - 10px);
-  right: 10px;
-  transform: translateY(-100%);
+.chat__textarea-wrapper > *:nth-child(1) {
+  flex: 1 0 auto;
+}
+
+.chat__textarea-wrapper textarea {
+  resize: none !important;
+  border: none !important;
+}
+
+.chat__textarea-wrapper textarea:focus {
+  border: none !important;
+}
+
+.message-submit__icon {
+  fill: #d3e7f9;
+  stroke: #065299;
+  stroke-width: 1.5rem;
+}
+
+.awsui-dark-mode .message-submit__icon {
+  fill: #5f6b7a;
+  stroke: #9ba7b6;
+}
+
+.message-stop__icon {
+  fill: 	#fff7f7;
+  stroke: #d91515;
+  stroke-width: 1.5rem;
 }
