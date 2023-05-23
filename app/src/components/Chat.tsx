@@ -113,16 +113,26 @@ const Chat: FC<object> = () => {
     setRemovalModalVisible(false);
   };
 
+  // @TODO get an svg and iconSvg instead of iconName
+  const headerActionItems: ButtonDropdownProps.Item[] = [
+    selectedAssistant.pinnedTime
+      ? { text: 'Unpin', id: 'unpin', iconName: 'undo' }
+      : { text: 'Pin', id: 'pin', iconName: 'expand' },
+    { text: 'Edit', id: 'vi', iconName: 'edit' },
+    { text: 'Delete', id: 'rm', iconName: 'remove' },
+  ];
+
   const headerActions = (
     <ButtonDropdown
-      items={[
-        { text: 'Edit', id: 'vi', iconName: 'edit' },
-        { text: 'Delete', id: 'rm', iconName: 'remove' },
-      ]}
+      items={headerActionItems}
       onItemClick={(
         event: CustomEvent<ButtonDropdownProps.ItemClickDetails>,
       ): void => {
-        if (event.detail.id === 'vi') {
+        if (event.detail.id === 'pin') {
+          storageProvider.pinAssistant(selectedAssistant.id);
+        } else if (event.detail.id === 'unpin') {
+          storageProvider.unpinAssistant(selectedAssistant.id);
+        } else if (event.detail.id === 'vi') {
           onEditAssistantClick();
         } else if (event.detail.id === 'rm') {
           onDeleteAssistantClick();

@@ -5,6 +5,7 @@ export type Assistant = {
   creationDate?: Date;
   lastPromptUpdate?: Date;
   lastMessageDate?: Date;
+  pinnedTime?: Date;
 };
 
 export type AssistantFormFields = Pick<

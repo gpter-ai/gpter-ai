@@ -70,4 +70,12 @@ export class IndexedStorageProvider implements StorageProvider {
 
     return Promise.resolve(config ? JSON.parse(config) : null);
   }
+
+  async pinAssistant(id: string): Promise<void> {
+    this.#db.assistants.update(id, { pinnedTime: new Date() });
+  }
+
+  async unpinAssistant(id: string): Promise<void> {
+    this.#db.assistants.update(id, { pinnedTime: null });
+  }
 }

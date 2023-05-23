@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
-import { Box, Container, Header } from '@cloudscape-design/components';
+import { Box, Container, Header, Icon } from '@cloudscape-design/components';
 import ChooseAssistantModal from './ChooseAssistantModal';
 
 import './AssistantsPane.scss';
@@ -14,6 +14,7 @@ const AssistantsPane: FC<object> = () => {
   const { assistants, selectedAssistant, selectAssistantById } =
     useAssistantsProvider();
 
+  // @TODO - get proper svg for pinned
   return (
     <Container header={<Header>Assistants</Header>}>
       <SpaceBetween direction="vertical" size="m">
@@ -35,9 +36,12 @@ const AssistantsPane: FC<object> = () => {
                 assistant.id === selectedAssistant?.id ? 'primary' : 'normal'
               }
             >
-              <Box textAlign="center" color="inherit">
-                {assistant.name}
-              </Box>
+              {assistant.name}
+              {assistant.pinnedTime && (
+                <Box float="right" color="inherit">
+                  <Icon name="expand" />
+                </Box>
+              )}
             </Button>
           </div>
         ))}

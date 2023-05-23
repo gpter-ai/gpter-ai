@@ -2,17 +2,17 @@ import { Assistant } from '@/data/types';
 
 export const sortAssistants = (assistants: Assistant[]): Assistant[] =>
   assistants.sort((a, b) => {
-    if (!a.lastMessageDate && !b.lastMessageDate) {
-      return a.name.localeCompare(b.name);
+    if (!a.pinnedTime && !b.pinnedTime) {
+      return 0;
     }
 
-    if (!a.lastMessageDate) {
+    if (!a.pinnedTime) {
       return 1;
     }
 
-    if (!b.lastMessageDate) {
+    if (!b.pinnedTime) {
       return -1;
     }
 
-    return b.lastMessageDate.getTime() - a.lastMessageDate.getTime();
+    return a.pinnedTime.getTime() - b.pinnedTime.getTime();
   });

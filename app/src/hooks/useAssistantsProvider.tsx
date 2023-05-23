@@ -65,6 +65,14 @@ export const AssistantsProvider: FC<Props> = ({ children }) => {
     selectedAssistant,
   ]);
 
+  useEffect(() => {
+    if (selectedAssistant) {
+      setSelectedAssistant(
+        assistants.find((a) => a.id === selectedAssistant.id),
+      );
+    }
+  }, [assistants]);
+
   const selectAssistantById = useCallback(
     (id: string): void => {
       setSelectedAssistant(assistants.find((assistant) => assistant.id === id));

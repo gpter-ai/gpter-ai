@@ -7,6 +7,7 @@ import {
   UserConfig,
 } from './types';
 
+// @TODO - make all methods async
 export interface StorageProvider {
   getAssistants(): Promise<Assistant[]>;
   getAssistant(key: string): Promise<Nullable<Assistant>>;
@@ -18,4 +19,7 @@ export interface StorageProvider {
   getChunksByFilter(filter: (chunk: Chunk) => boolean): Promise<Chunk[]>;
   putUserConfig(config: UserConfig): void;
   getUserConfig(): Promise<Nullable<UserConfig>>;
+
+  pinAssistant(id: string): Promise<void>;
+  unpinAssistant(id: string): Promise<void>;
 }
