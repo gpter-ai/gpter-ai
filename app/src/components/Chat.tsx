@@ -90,7 +90,9 @@ const Chat: FC<object> = () => {
       lastPromptUpdate,
     });
 
-    await chatService.submitPromptOnly(selectedAssistant.id, onApiError);
+    if (props.prompt !== selectedAssistant.prompt) {
+      await chatService.submitPromptOnly(selectedAssistant.id, onApiError);
+    }
   };
 
   const onEditAssistantClick = (): void =>
