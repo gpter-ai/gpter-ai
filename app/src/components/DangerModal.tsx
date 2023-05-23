@@ -24,6 +24,7 @@ const DangerModal: FC<Props> = ({
   return (
     <Modal
       visible={visible}
+      onDismiss={onCancel}
       closeAriaLabel="Close modal"
       size="small"
       footer={

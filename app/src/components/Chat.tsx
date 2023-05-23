@@ -1,6 +1,8 @@
 import {
   Box,
   Button,
+  ButtonDropdown,
+  ButtonDropdownProps,
   Container,
   FormField,
   Header,
@@ -112,14 +114,23 @@ const Chat: FC<object> = () => {
   };
 
   const headerActions = (
-    <SpaceBetween direction="horizontal" size="xs">
-      <Button iconName="edit" onClick={onEditAssistantClick}>
-        Edit
-      </Button>
-      <Button iconName="remove" onClick={onDeleteAssistantClick}>
-        Delete
-      </Button>
-    </SpaceBetween>
+    <ButtonDropdown
+      items={[
+        { text: 'Edit', id: 'vi', iconName: 'edit' },
+        { text: 'Delete', id: 'rm', iconName: 'remove' },
+      ]}
+      onItemClick={(
+        event: CustomEvent<ButtonDropdownProps.ItemClickDetails>,
+      ): void => {
+        if (event.detail.id === 'vi') {
+          onEditAssistantClick();
+        } else if (event.detail.id === 'rm') {
+          onDeleteAssistantClick();
+        }
+      }}
+    >
+      Actions
+    </ButtonDropdown>
   );
 
   const onApiError = useCallback((error: ApiError): void => {
@@ -145,23 +156,16 @@ const Chat: FC<object> = () => {
   };
 
   const SubmitButton = (
-    <Button
-      variant="primary"
-      iconName="angle-right"
-      iconAlign="right"
-      onClick={onMessageSubmit}
-    >
-      Submit
+    <Button variant="primary" iconAlign="right" onClick={onMessageSubmit}>
+      <Box fontSize="heading-s" color="inherit" variant="span">
+        Send
+      </Box>
     </Button>
   );
 
   const StopButton = (
-    <Button
-      iconName="status-negative"
-      iconAlign="right"
-      onClick={onStopButtonClick}
-    >
-      Stop
+    <Button onClick={onStopButtonClick}>
+      <Box fontSize="heading-s">Stop</Box>
     </Button>
   );
 
@@ -186,25 +190,29 @@ const Chat: FC<object> = () => {
         </Header>
       }
     >
-      <div ref={containerRef}>
-        <div className="header__line" />
-        <ConversationView messages={history} />
-        <FormField errorText={inputError} stretch label="Type a query">
-          <div className="chat__textarea-wrapper">
+      <div className="header__line" />
+      <ConversationView messages={history} />
+      <Box margin={{ vertical: 'm' }}>
+        <hr />
+      </Box>
+      <FormField errorText={inputError} stretch>
+        <div className="chat__textarea-wrapper">
+          <div ref={containerRef}>
             <Textarea
               onKeyDown={handleChatKeyDown}
               value={text}
               onChange={onValueChange}
+              placeholder="Write a message"
               rows={2}
               autoFocus
               readOnly={receivingInProgress}
             />
-            <div className="chat__main-action">
-              {receivingInProgress ? StopButton : SubmitButton}
-            </div>
           </div>
-        </FormField>
-      </div>
+          <div className="chat__main-action">
+            {receivingInProgress ? StopButton : SubmitButton}
+          </div>
+        </div>
+      </FormField>
       <DangerModal
         visible={removalModalVisible}
         text={`You are about to remove ${selectedAssistant.name}. Are you sure?`}
