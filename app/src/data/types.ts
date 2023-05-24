@@ -57,4 +57,5 @@ export type PartialChunkData = Omit<Chunk, 'id' | 'timestamp'>;
 
 export type UserConfig = {
   apiKey: string;
+  minimizeOnClose: boolean;
 };

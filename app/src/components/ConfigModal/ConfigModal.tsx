@@ -5,6 +5,7 @@ import {
   Input,
   Modal,
   SpaceBetween,
+  Toggle,
 } from '@cloudscape-design/components';
 import { FC, useEffect, useState } from 'react';
 import { UserConfig } from '@/data/types';
@@ -20,6 +21,7 @@ type Props = {
 
 const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
   const [apiKey, setApiKey] = useState<string>('');
+  const [minimizeOnClose, setMinimizeOnClose] = useState(false);
   const [validatedApiKey, setValidatedApiKey] = useState<string>('');
   const [apiKeyError, setApiKeyError] = useState<string>('');
 
@@ -28,6 +30,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
   useEffect(() => {
     setApiKey(initValues?.apiKey || '');
     setValidatedApiKey(initValues?.apiKey || '');
+    setMinimizeOnClose(initValues.minimizeOnClose || false);
   }, [initValues]);
 
   const { checkApiKey } = useApiService();
@@ -64,7 +67,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
       return;
     }
 
-    onConfirm({ apiKey });
+    onConfirm({ apiKey, minimizeOnClose });
   };
 
   const onValidateApiKey = (): void => {
@@ -90,7 +93,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
       size="medium"
       onDismiss={() => {
         if (initValues.apiKey) {
-          onConfirm({ apiKey: initValues.apiKey });
+          onConfirm({ apiKey: initValues.apiKey, minimizeOnClose });
         } else {
           onSubmit();
         }
@@ -114,19 +117,29 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
       }
       header="Configuration"
     >
-      <FormField
-        errorText={apiKeyError}
-        label="Put your API key here."
-        description="You need the API key in order to be able to connect to the AI"
-      >
-        <Input
-          value={apiKey}
-          onChange={(event): void => {
-            setApiKeyError(validateFormat(event.detail.value));
-            setApiKey(event.detail.value);
-          }}
-        />
-      </FormField>
+      <SpaceBetween size="m">
+        <FormField
+          errorText={apiKeyError}
+          label="Put your API key here."
+          description="You need the API key in order to be able to connect to the AI"
+        >
+          <Input
+            value={apiKey}
+            onChange={(event): void => {
+              setApiKeyError(validateFormat(event.detail.value));
+              setApiKey(event.detail.value);
+            }}
+          />
+        </FormField>
+        <FormField>
+          <Toggle
+            checked={minimizeOnClose}
+            onChange={(e) => setMinimizeOnClose(e.detail.checked)}
+          >
+            Minimize on close
+          </Toggle>
+        </FormField>
+      </SpaceBetween>
       <HelpModal visible={helpModalVisible} setVisible={setHelpModalVisible} />
     </Modal>
   );

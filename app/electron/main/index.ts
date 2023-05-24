@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { release } from 'node:os';
 import { join } from 'node:path';
+import { enableMinimizeOnClose } from './ minimizeOnClose';
 
 // The built directory structure
 //
@@ -76,6 +77,8 @@ function createWindow(): void {
   win.once('ready-to-show', () => {
     autoUpdater.checkForUpdatesAndNotify();
   });
+
+  enableMinimizeOnClose(app, win);
 }
 
 app.whenReady().then(createWindow);
