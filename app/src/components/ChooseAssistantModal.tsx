@@ -9,9 +9,10 @@ import {
 
 import { useAssistantModal } from '@/context/AssistantModal';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
-import { AssistantFormFields } from '@/data/types';
+import { Assistant, AssistantFormFields } from '@/data/types';
 import { Prompt, prompts } from '@/data/prompts';
 import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
+import { useChatService } from '@/data/ChatService';
 
 type AssistantsCardsProps = {
   onChooseAssistant: (item: Prompt) => void;
@@ -60,12 +61,17 @@ const ChooseAssistantModal: FC<Props> = ({ visible, setVisible }) => {
 
   const storageProvider = useStorageProvider();
 
+  const { chatService } = useChatService();
+
   const { setSelectedAssistant } = useAssistantsProvider();
 
   const onAssistantModalSubmit = (props: AssistantFormFields): void => {
     storageProvider
       .createAssistant(props)
-      .then(setSelectedAssistant)
+      .then((assistant: Assistant) => {
+        setSelectedAssistant(assistant);
+        chatService.submitPrompt(assistant.prompt, assistant.id);
+      })
       .then(() => setVisible(false));
   };
 

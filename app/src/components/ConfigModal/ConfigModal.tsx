@@ -30,7 +30,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
     setValidatedApiKey(initValues?.apiKey || '');
   }, [initValues]);
 
-  const { apiService } = useApiService(apiKey);
+  const { checkApiKey } = useApiService();
 
   const apiKeyNeedsValidation = validatedApiKey !== apiKey;
 
@@ -68,7 +68,7 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
   };
 
   const onValidateApiKey = (): void => {
-    apiService.checkAuthToken().then((result) => {
+    checkApiKey(apiKey).then((result) => {
       switch (result) {
         case 'valid':
           setValidatedApiKey(apiKey);

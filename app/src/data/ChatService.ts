@@ -10,6 +10,7 @@ import { getSessionStartDate } from './sessionHelper';
 import { Nullable } from '@/types';
 import ApiError from '@/api/error/ApiError';
 import { useApiService } from '@/hooks/useApiService';
+import { useStorageProvider } from '@/hooks/useStorageProvider';
 
 export class ChatService {
   constructor(
@@ -86,6 +87,14 @@ export class ChatService {
       chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),
     );
 
+    const lastPromptIndex = messages.findLastIndex(
+      (message) => message.role === 'system',
+    );
+
+    if (lastPromptIndex !== -1) {
+      return messages.slice(lastPromptIndex);
+    }
+
     return [promptMessage, ...messages];
   }
 
@@ -121,17 +130,29 @@ export class ChatService {
     await this.storageProvider.createChunk(userMessageChunk);
     await this.storageProvider.createChunk(userDoneChunk);
 
-    await this.storageProvider.updateAssistant(assistantId, {
-      lastMessageDate: new Date(),
-    });
-
     await this.onMessageSubmit(assistantId, onError);
   }
 
-  public async submitPromptOnly(
+  public async submitPrompt(
+    prompt: string,
     assistantId: string,
     onError?: (error: ApiError) => void,
   ): Promise<void> {
+    const messageChunk: PartialChunkData = {
+      content: { message: prompt, kind: ChunkContentKind.DATA },
+      role: 'system',
+      assistantId,
+    };
+
+    const doneChunk: PartialChunkData = {
+      content: { kind: ChunkContentKind.DONE },
+      role: 'system',
+      assistantId,
+    };
+
+    await this.storageProvider.createChunk(messageChunk);
+    await this.storageProvider.createChunk(doneChunk);
+
     await this.onMessageSubmit(assistantId, onError);
   }
 
@@ -174,10 +195,6 @@ export class ChatService {
         processResponse,
         this.abortController.signal,
       );
-
-      await this.storageProvider.updateAssistant(assistantId, {
-        lastMessageDate: new Date(),
-      });
     } catch (error) {
       if (error instanceof ApiError) {
         onError && onError(error as ApiError);
@@ -192,11 +209,10 @@ export class ChatService {
 
 let chatService: Nullable<ChatService> = null;
 
-export const useChatService = (
-  storageProvider: StorageProvider,
-): {
+export const useChatService = (): {
   chatService: ChatService;
 } => {
+  const storageProvider = useStorageProvider();
   const { apiService } = useApiService();
 
   if (chatService) {

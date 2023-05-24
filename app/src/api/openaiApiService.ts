@@ -14,16 +14,22 @@ import {
   ApiResponsePayload,
   ApiResponseType,
   ApiService,
+  ApiServiceConstructor,
 } from './types';
 import UnauhtorizedError from './error/UnauthorizedError';
 import GeneralError from './error/GeneralError';
+import { StorageProvider } from '@/data';
 
-export class OpenAiApiService implements ApiService {
-  constructor(private apiKey: string) {}
+const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
+  implements ApiService
+{
+  constructor(private storageProvider: StorageProvider) {}
 
-  async checkAuthToken(): Promise<'valid' | 'invalid' | 'error'> {
+  static async checkApiKey(
+    apiKey: string,
+  ): Promise<'valid' | 'invalid' | 'error'> {
     const headers = {
-      authorization: `Bearer ${this.apiKey}`,
+      authorization: `Bearer ${apiKey}`,
     };
 
     return fetch(`${BASE_OPENAI_URL}v1/models`, { headers }).then(
@@ -46,6 +52,8 @@ export class OpenAiApiService implements ApiService {
     onResponse: (response: ApiResponse) => void,
     abortSignal?: AbortSignal,
   ): Promise<void> {
+    const apiKey = (await this.storageProvider.getUserConfig())?.apiKey;
+
     const requestParam: CreateChatCompletionRequest = {
       model: OPENAI_MODEL,
       messages,
@@ -54,7 +62,7 @@ export class OpenAiApiService implements ApiService {
     };
 
     const headers = {
-      authorization: `Bearer ${this.apiKey}`,
+      authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     };
 
@@ -97,4 +105,6 @@ export class OpenAiApiService implements ApiService {
 
     return payload.choices[0]?.delta?.content ?? '';
   }
-}
+};
+
+export default OpenAiApiService;

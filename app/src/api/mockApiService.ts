@@ -1,5 +1,10 @@
 import { ChatCompletionRequestMessage } from 'openai';
-import { ApiResponse, ApiResponseType, ApiService } from './types';
+import {
+  ApiResponse,
+  ApiResponseType,
+  ApiService,
+  ApiServiceConstructor,
+} from './types';
 
 const POSTFIX = new Array(100).fill(0).map((x, i) => `Item ${i},`);
 
@@ -22,8 +27,10 @@ const SAMPLE_MESSAGE = [
   ...POSTFIX,
 ];
 
-export class MockApiService implements ApiService {
-  async checkAuthToken(): Promise<'valid' | 'invalid' | 'error'> {
+export const MockApiService: ApiServiceConstructor = class MockApiService
+  implements ApiService
+{
+  static async checkApiKey(): Promise<'valid' | 'invalid' | 'error'> {
     return new Promise((resolve) => {
       setTimeout(() => resolve('valid'), 1000);
     });
@@ -51,4 +58,4 @@ export class MockApiService implements ApiService {
       message: `${SAMPLE_MESSAGE[index]} `,
     };
   }
-}
+};

@@ -8,7 +8,6 @@ import {
   Header,
   InputProps,
   NonCancelableCustomEvent,
-  SpaceBetween,
   Textarea,
 } from '@cloudscape-design/components';
 import { FC, useCallback, useEffect, useState } from 'react';
@@ -37,7 +36,7 @@ const Chat: FC<object> = () => {
   const { containerRef } = useAutoGrowTextArea();
 
   const storageProvider = useStorageProvider();
-  const { chatService } = useChatService(storageProvider);
+  const { chatService } = useChatService();
   const { shiftPressed } = useKeysProvider();
 
   const { selectedAssistant, selectDefaultAssistant } = useAssistantsProvider();
@@ -91,7 +90,11 @@ const Chat: FC<object> = () => {
     });
 
     if (props.prompt !== selectedAssistant.prompt) {
-      await chatService.submitPromptOnly(selectedAssistant.id, onApiError);
+      await chatService.submitPrompt(
+        props.prompt,
+        selectedAssistant.id,
+        onApiError,
+      );
     }
   };
 

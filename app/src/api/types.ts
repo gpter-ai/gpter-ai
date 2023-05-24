@@ -6,9 +6,14 @@ import {
   ChatCompletionResponseMessage,
   CreateChatCompletionResponseChoicesInner,
 } from 'openai/api';
+import { StorageProvider } from '@/data';
+
+export interface ApiServiceConstructor {
+  checkApiKey(apiKey: string): Promise<'valid' | 'invalid' | 'error'>;
+  new (storageProvider: StorageProvider): ApiService;
+}
 
 export interface ApiService {
-  checkAuthToken(): Promise<'valid' | 'invalid' | 'error'>;
   sendMessages(
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
