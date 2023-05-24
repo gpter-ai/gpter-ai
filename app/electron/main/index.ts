@@ -45,13 +45,14 @@ const indexHtml = join(process.env.DIST, 'index.html');
 function createWindow(): void {
   win = new BrowserWindow({
     title: 'Main window',
-    minHeight: 900,
-    minWidth: 1000,
+    minHeight: 1280,
+    minWidth: 1200,
     icon: join(process.env.PUBLIC, 'favicon.ico'),
     webPreferences: {
       preload,
       contextIsolation: false,
     },
+    titleBarStyle: 'hidden',
   });
 
   if (devUrl) {

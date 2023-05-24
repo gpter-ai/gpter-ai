@@ -50,21 +50,25 @@ const Content: FC = () => {
   return (
     <ContentLayout
       header={
-        <Box margin={{ top: 'm' }}>
-          <SpaceBetween size="m">
-            <Header
-              actions={
-                <HeaderActions
-                  setConfigModalVisible={setConfigModalVisible}
-                  setHelpModalVisible={setHelpModalVisible}
-                />
-              }
-              variant="h1"
-            >
-              GPTer
-            </Header>
-          </SpaceBetween>
-        </Box>
+        <div className="draggable-title">
+          <Box margin={{ top: 'm' }}>
+            <SpaceBetween size="m">
+              <Header
+                actions={
+                  <div className="non-draggable-title">
+                    <HeaderActions
+                      setConfigModalVisible={setConfigModalVisible}
+                      setHelpModalVisible={setHelpModalVisible}
+                    />
+                  </div>
+                }
+                variant="h1"
+              >
+                GPTer
+              </Header>
+            </SpaceBetween>
+          </Box>
+        </div>
       }
     >
       <AssistantModalProvider>
