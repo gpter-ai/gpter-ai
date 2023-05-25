@@ -43,6 +43,7 @@
     "highlight.js": "^11.8.0",
     "husky": "^8.0.3",
     "lodash": "^4.17.21",
+    "react-markdown": "^8.0.7",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
