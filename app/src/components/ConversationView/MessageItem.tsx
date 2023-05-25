@@ -17,7 +17,9 @@ import { ChatGptRole } from '@/data/types';
 const CodeHighlight: CodeComponent = (props) => {
   const { className, children, inline } = props;
 
-  if (inline) return <b>{children}</b>;
+  if (inline) return <span className="inline-code">{children}</span>;
+
+  console.log({ className, children, inline });
 
   const languageFromClassName = /language-(\w+)/.exec(className || '');
   const highlight = hljs.highlightAuto(String(children));
