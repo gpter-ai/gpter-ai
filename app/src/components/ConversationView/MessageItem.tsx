@@ -19,8 +19,6 @@ const CodeHighlight: CodeComponent = (props) => {
 
   if (inline) return <span className="inline-code">{children}</span>;
 
-  console.log({ className, children, inline });
-
   const languageFromClassName = /language-(\w+)/.exec(className || '');
   const highlight = hljs.highlightAuto(String(children));
 
