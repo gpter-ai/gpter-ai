@@ -14,7 +14,11 @@ import { ChatMessage } from '@/components/types';
 import './MessageItem.scss';
 import { ChatGptRole } from '@/data/types';
 
-const CodeHighlight: CodeComponent = ({ className, children }) => {
+const CodeHighlight: CodeComponent = (props) => {
+  const { className, children, inline } = props;
+
+  if (inline) return <b>{children}</b>;
+
   const languageFromClassName = /language-(\w+)/.exec(className || '');
   const highlight = hljs.highlightAuto(String(children));
 
