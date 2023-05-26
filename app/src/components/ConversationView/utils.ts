@@ -14,7 +14,7 @@ export const chatMessagesToChatItems = (
   );
 
   return chatMessages.reduce((acc, message, idx) => {
-    if (idx === sessionBreakIndex) {
+    if (idx > 0 && idx === sessionBreakIndex) {
       acc.push({ type: ChatItemType.SessionBreak });
     }
 

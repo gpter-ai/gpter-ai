@@ -129,8 +129,9 @@ export class ChatService {
 
     await this.storageProvider.createChunk(userMessageChunk);
     await this.storageProvider.createChunk(userDoneChunk);
+    const messages = await this.getSessionHistory(assistantId);
 
-    await this.onMessageSubmit(assistantId, onError);
+    await this.onMessageSubmit(assistantId, messages, onError);
   }
 
   public async submitPrompt(
@@ -152,16 +153,30 @@ export class ChatService {
 
     await this.storageProvider.createChunk(messageChunk);
     await this.storageProvider.createChunk(doneChunk);
+    const messages = await this.getSessionHistory(assistantId);
 
-    await this.onMessageSubmit(assistantId, onError);
+    const serviceMessages: ChatMessage[] = [
+      {
+        content:
+          'Please only confirm and repeat the previous prompt in one short clear sentence, speaking from your perspective as my interlocutor, but do not go into detail about it.',
+        role: 'user',
+        timestamp: Date.now(),
+        finished: true,
+      },
+    ];
+
+    await this.onMessageSubmit(
+      assistantId,
+      messages.concat(serviceMessages),
+      onError,
+    );
   }
 
   private async onMessageSubmit(
     assistantId: string,
+    messages: ChatMessage[],
     onError?: (error: ApiError) => void,
   ): Promise<void> {
-    const messages = await this.getSessionHistory(assistantId);
-
     const processResponse = (response: ApiResponse): void => {
       // @TODO - consider using finish reason instead
       if (response.kind === ApiResponseType.Done) {
