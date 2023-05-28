@@ -57,6 +57,14 @@ export class IndexedStorageProvider implements StorageProvider {
     return this.#db.chunks.where({ assistantId }).toArray();
   }
 
+  getLastChunkByAssistant(assistantId: string): Promise<Nullable<Chunk>> {
+    return this.#db.chunks
+      .where({ assistantId })
+      .reverse()
+      .sortBy('timestamp')
+      .then((chunks) => (chunks.length ? chunks[0] : null));
+  }
+
   getChunksByFilter(filter: (chunk: Chunk) => boolean): Promise<Chunk[]> {
     return this.#db.chunks.filter(filter).toArray();
   }

@@ -5,3 +5,5 @@ export const MAX_RESPONSE_TOKENS = 2000;
 
 export const DATA_STREAM_DONE_INDICATOR = '[DONE]';
 export const USE_MOCK_API = false;
+
+export const API_TIMEOUT = 10000;

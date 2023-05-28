@@ -75,7 +75,7 @@ const ChooseAssistantModal: FC<Props> = ({ visible, setVisible }) => {
       .then((assistant: Assistant) => {
         setSelectedAssistant(assistant);
         setFilterText('');
-        chatService.submitPrompt(assistant.prompt, assistant.id);
+        chatService.submitMessage(assistant.prompt, assistant.id, 'system');
       })
       .then(() => setVisible(false));
   };
