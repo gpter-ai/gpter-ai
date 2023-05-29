@@ -4,6 +4,7 @@ import {
   CreateChatCompletionRequest,
 } from 'openai';
 import {
+  API_TIMEOUT,
   BASE_OPENAI_URL,
   DATA_STREAM_DONE_INDICATOR,
   MAX_RESPONSE_TOKENS,
@@ -19,6 +20,7 @@ import {
 import UnauhtorizedError from './error/UnauthorizedError';
 import GeneralError from './error/GeneralError';
 import { StorageProvider } from '@/data';
+import TimeoutError from './error/TimeoutError';
 
 const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
   implements ApiService
@@ -66,38 +68,59 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
       'Content-Type': 'application/json',
     };
 
-    await fetchEventSource(`${BASE_OPENAI_URL}v1/chat/completions`, {
-      method: 'POST',
-      body: JSON.stringify(requestParam),
-      headers,
-      async onopen(response) {
-        if (response.ok) {
-          return;
-        }
+    let timeoutFlag = true;
 
-        if (response.status === 401) {
-          throw new UnauhtorizedError('Unauhtorized. Check your API key!');
+    const timeoutPromise: Promise<void> = new Promise((_, reject) => {
+      setTimeout(() => {
+        if (timeoutFlag) {
+          reject(
+            new TimeoutError(
+              'The AI service seems to be unavailable at the moment! Try to repeat your request later.',
+            ),
+          );
         }
-      },
-      onerror: (error) => {
-        if (error instanceof UnauhtorizedError) {
-          throw error;
-        }
-
-        throw new GeneralError();
-      },
-      onmessage: (msg) => {
-        const apiResponse: ApiResponse =
-          msg.data === DATA_STREAM_DONE_INDICATOR
-            ? { kind: ApiResponseType.Done }
-            : {
-                kind: ApiResponseType.Data,
-                message: this.extractMessage(msg.data),
-              };
-        onResponse(apiResponse);
-      },
-      signal: abortSignal,
+      }, API_TIMEOUT);
     });
+
+    const fetchPromise = fetchEventSource(
+      `${BASE_OPENAI_URL}v1/chat/completions`,
+      {
+        method: 'POST',
+        body: JSON.stringify(requestParam),
+        headers,
+        async onopen(response) {
+          timeoutFlag = false;
+
+          if (response.ok) {
+            return;
+          }
+
+          if (response.status === 401) {
+            throw new UnauhtorizedError('Unauhtorized. Check your API key!');
+          }
+        },
+        onerror: (error) => {
+          if (error instanceof UnauhtorizedError) {
+            throw error;
+          }
+
+          throw new GeneralError();
+        },
+        onmessage: (msg) => {
+          const apiResponse: ApiResponse =
+            msg.data === DATA_STREAM_DONE_INDICATOR
+              ? { kind: ApiResponseType.Done }
+              : {
+                  kind: ApiResponseType.Data,
+                  message: this.extractMessage(msg.data),
+                };
+          onResponse(apiResponse);
+        },
+        signal: abortSignal,
+      },
+    );
+
+    return Promise.race([timeoutPromise, fetchPromise]);
   }
 
   private extractMessage(data: string): string {

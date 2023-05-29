@@ -40,16 +40,21 @@ export const MockApiService: ApiServiceConstructor = class MockApiService
     messages: Array<ChatCompletionRequestMessage>,
     onResponse: (response: ApiResponse) => void,
   ): Promise<void> {
-    let index = 0;
-    const intervalId = setInterval(() => {
-      if (index >= SAMPLE_MESSAGE.length) {
-        clearInterval(intervalId);
-        onResponse({ kind: ApiResponseType.Done });
-      } else {
-        onResponse(this.createDataResponse(index));
-      }
-      index += 1;
-    }, 50);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let index = 0;
+        const intervalId = setInterval(() => {
+          if (index >= SAMPLE_MESSAGE.length) {
+            clearInterval(intervalId);
+            onResponse({ kind: ApiResponseType.Done });
+            resolve();
+          } else {
+            onResponse(this.createDataResponse(index));
+          }
+          index += 1;
+        }, 50);
+      }, 500);
+    });
   }
 
   private createDataResponse(index: number): ApiResponse {

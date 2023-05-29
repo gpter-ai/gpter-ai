@@ -55,17 +55,18 @@ const Chat: FC<object> = () => {
     [],
   );
 
-  useEffect(() => {
-    const lastMessage = history.at(-1);
+  const assistantReceivingInProgress =
+    chatService.receivingInProgress[selectedAssistant.id];
 
+  useEffect(() => {
     setReceivingInProgress(
-      !!(
-        lastMessage &&
-        lastMessage.role === 'assistant' &&
-        !lastMessage.finished
-      ),
+      chatService.receivingInProgress[selectedAssistant.id],
     );
-  }, [history, selectedAssistant.id]);
+  }, [
+    assistantReceivingInProgress,
+    chatService.receivingInProgress,
+    selectedAssistant.id,
+  ]);
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
@@ -79,20 +80,11 @@ const Chat: FC<object> = () => {
   const onAssistantModalSubmit = async (
     props: AssistantFormFields,
   ): Promise<void> => {
-    const lastPromptUpdate =
-      props.prompt === selectedAssistant.prompt
-        ? selectedAssistant.lastPromptUpdate
-        : new Date();
-
-    storageProvider.updateAssistant(selectedAssistant.id, {
-      ...props,
-      lastPromptUpdate,
-    });
-
     if (props.prompt !== selectedAssistant.prompt) {
-      await chatService.submitPrompt(
+      await chatService.submitMessage(
         props.prompt,
         selectedAssistant.id,
+        'system',
         onApiError,
       );
     }
@@ -159,15 +151,18 @@ const Chat: FC<object> = () => {
     }
 
     setText('');
-    await chatService.submitUserMessage(
+    await chatService.submitMessage(
       `${text}`,
       selectedAssistant.id,
+      'user',
       onApiError,
     );
   };
 
   const onStopButtonClick = (): void => {
     chatService.abortEventsReceiving(selectedAssistant.id);
+    // @TODO - I don't like it, I'd rather have it set automatically based on the ChatService state
+    setReceivingInProgress(false);
   };
 
   const SubmitButton = (

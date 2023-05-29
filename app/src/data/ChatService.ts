@@ -11,8 +11,12 @@ import { Nullable } from '@/types';
 import ApiError from '@/api/error/ApiError';
 import { useApiService } from '@/hooks/useApiService';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
+import { promptServiceMessages } from './serviceMessages';
+import TimeoutError from '@/api/error/TimeoutError';
 
 export class ChatService {
+  public receivingInProgress: Record<string, boolean> = {};
+
   constructor(
     private storageProvider: StorageProvider,
     private apiService: ApiService,
@@ -78,10 +82,7 @@ export class ChatService {
       .filter((x) => x.role === 'user')
       .map((chunk) => chunk.timestamp);
 
-    const sessionStartDate = Math.max(
-      getSessionStartDate(timeStamps),
-      assistant.lastPromptUpdate ? assistant.lastPromptUpdate.getTime() : 0,
-    );
+    const sessionStartDate = getSessionStartDate(timeStamps);
 
     const messages = this.convertChunksToMessages(
       chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),
@@ -104,72 +105,48 @@ export class ChatService {
 
     Dexie.currentTransaction && Dexie.currentTransaction.abort();
 
-    await this.storageProvider.createChunk({
-      content: { kind: ChunkContentKind.DONE },
-      role: 'assistant',
+    const lastChunk = await this.storageProvider.getLastChunkByAssistant(
       assistantId,
-    });
+    );
+    if (lastChunk && lastChunk.content.kind !== ChunkContentKind.DONE) {
+      await this.storageProvider.createChunk({
+        content: { kind: ChunkContentKind.DONE },
+        role: 'assistant',
+        assistantId,
+      });
+    }
+
+    this.receivingInProgress[assistantId] = false;
   }
 
-  public async submitUserMessage(
+  public async submitMessage(
     message: string,
     assistantId: string,
-    onError?: (error: ApiError) => void,
-  ): Promise<void> {
-    const userMessageChunk: PartialChunkData = {
-      content: { message, kind: ChunkContentKind.DATA },
-      role: 'user',
-      assistantId,
-    };
-    const userDoneChunk: PartialChunkData = {
-      content: { kind: ChunkContentKind.DONE },
-      role: 'user',
-      assistantId,
-    };
-
-    await this.storageProvider.createChunk(userMessageChunk);
-    await this.storageProvider.createChunk(userDoneChunk);
-    const messages = await this.getSessionHistory(assistantId);
-
-    await this.onMessageSubmit(assistantId, messages, onError);
-  }
-
-  public async submitPrompt(
-    prompt: string,
-    assistantId: string,
+    role: 'user' | 'system' = 'user',
     onError?: (error: ApiError) => void,
   ): Promise<void> {
     const messageChunk: PartialChunkData = {
-      content: { message: prompt, kind: ChunkContentKind.DATA },
-      role: 'system',
+      content: { message, kind: ChunkContentKind.DATA },
+      role,
       assistantId,
     };
 
     const doneChunk: PartialChunkData = {
       content: { kind: ChunkContentKind.DONE },
-      role: 'system',
+      role,
       assistantId,
     };
 
     await this.storageProvider.createChunk(messageChunk);
     await this.storageProvider.createChunk(doneChunk);
-    const messages = await this.getSessionHistory(assistantId);
+    const sessionHistory = await this.getSessionHistory(assistantId);
 
-    const serviceMessages: ChatMessage[] = [
-      {
-        content:
-          'Please only confirm and repeat the previous prompt in one short clear sentence, speaking from your perspective as my interlocutor, but do not go into detail about it.',
-        role: 'user',
-        timestamp: Date.now(),
-        finished: true,
-      },
-    ];
+    const messages =
+      role === 'system'
+        ? sessionHistory.concat(promptServiceMessages)
+        : sessionHistory;
 
-    await this.onMessageSubmit(
-      assistantId,
-      messages.concat(serviceMessages),
-      onError,
-    );
+    await this.onMessageSubmit(assistantId, messages, onError);
   }
 
   private async onMessageSubmit(
@@ -205,20 +182,21 @@ export class ChatService {
     window.addEventListener('beforeunload', abortCallback);
 
     try {
+      this.receivingInProgress[assistantId] = true;
       await this.apiService.sendMessages(
         messages.map(this.chatMessageToRequestMessage),
         processResponse,
         this.abortController.signal,
       );
     } catch (error) {
-      if (error instanceof ApiError) {
+      if (error instanceof ApiError || error instanceof TimeoutError) {
+        await this.abortEventsReceiving(assistantId);
         onError && onError(error as ApiError);
       }
-
-      // @TODO - handle more error types?
+    } finally {
+      this.receivingInProgress[assistantId] = false;
+      window.removeEventListener('beforeunload', abortCallback);
     }
-
-    window.removeEventListener('beforeunload', abortCallback);
   }
 }
 
