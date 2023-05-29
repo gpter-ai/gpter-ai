@@ -71,6 +71,7 @@ export const AssistantsProvider: FC<Props> = ({ children }) => {
         assistants.find((a) => a.id === selectedAssistant.id),
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assistants]);
 
   const selectAssistantById = useCallback(

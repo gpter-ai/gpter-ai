@@ -1,7 +1,7 @@
-import React, { FC, useState } from 'react';
+import { FC, useState } from 'react';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
-import { Box, Container, Header, Icon } from '@cloudscape-design/components';
+import { Container, Header, Icon } from '@cloudscape-design/components';
 import ChooseAssistantModal from './ChooseAssistantModal';
 
 import './AssistantsPane.scss';
