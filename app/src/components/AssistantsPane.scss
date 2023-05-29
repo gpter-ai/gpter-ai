@@ -1,3 +1,9 @@
-.assistantsPaneButtonWrapper > button {
+.assistants-pane__button-wrapper > button {
   width: 100%;
+}
+
+.assistants-pane__button-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

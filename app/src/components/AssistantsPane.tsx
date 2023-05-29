@@ -18,7 +18,7 @@ const AssistantsPane: FC<object> = () => {
   return (
     <Container header={<Header>Assistants</Header>}>
       <SpaceBetween direction="vertical" size="m">
-        <div className="assistantsPaneButtonWrapper">
+        <div className="assistants-pane__button-wrapper">
           <Button
             iconName="add-plus"
             onClick={() => setAssistantSelectionModalVisible(true)}
@@ -29,19 +29,17 @@ const AssistantsPane: FC<object> = () => {
         </div>
         {assistants.length > 0 && <hr />}
         {assistants.map((assistant) => (
-          <div key={assistant.id} className="assistantsPaneButtonWrapper">
+          <div key={assistant.id} className="assistants-pane__button-wrapper">
             <Button
               onClick={() => selectAssistantById(assistant.id)}
               variant={
                 assistant.id === selectedAssistant?.id ? 'primary' : 'normal'
               }
             >
-              {assistant.name}
-              {assistant.pinnedTime && (
-                <Box float="right" color="inherit">
-                  <Icon name="expand" />
-                </Box>
-              )}
+              <div className="assistants-pane__button-inner">
+                {assistant.name}
+                {assistant.pinnedTime && <Icon name="expand" />}
+              </div>
             </Button>
           </div>
         ))}
