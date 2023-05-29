@@ -5,6 +5,7 @@ type Ref = MutableRefObject<HTMLDivElement | null>;
 
 type AutoGrowTextArea = {
   containerRef: Ref;
+  update: () => void;
 };
 
 const findTextArea = (elementRef: Ref): HTMLTextAreaElement | null => {
@@ -17,11 +18,16 @@ export const useAutoGrowTextArea = (): AutoGrowTextArea => {
   const containerRef = useRef<HTMLDivElement>() as Ref;
   const textArea = findTextArea(containerRef);
 
+  const update = (): void => {
+    if (textArea) autosize.update(textArea);
+  };
+
   useEffect(() => {
     if (textArea) autosize(textArea);
   }, [textArea]);
 
   return {
     containerRef,
+    update,
   };
 };

@@ -33,7 +33,7 @@ const Chat: FC<object> = () => {
   const [receivingInProgress, setReceivingInProgress] = useState(false);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
-  const { containerRef } = useAutoGrowTextArea();
+  const { containerRef, update: updateTextAreaSize } = useAutoGrowTextArea();
 
   const storageProvider = useStorageProvider();
   const { chatService } = useChatService();
@@ -67,6 +67,12 @@ const Chat: FC<object> = () => {
     chatService.receivingInProgress,
     selectedAssistant.id,
   ]);
+
+  useEffect(() => {
+    if (text === '') {
+      updateTextAreaSize();
+    }
+  }, [text, updateTextAreaSize]);
 
   const onValueChange = (
     e: NonCancelableCustomEvent<InputProps.ChangeDetail>,
