@@ -45,6 +45,42 @@
       2,
       { "namedComponents": "arrow-function" }
     ],
-    "no-unused-vars": ["error"]
+    "no-unused-vars": ["error"],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "default",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "allow"
+      },
+
+      {
+        "selector": "variable",
+        "format": ["camelCase", "PascalCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "allow"
+      },
+
+      {
+        "selector": "typeLike",
+        "format": ["PascalCase"]
+      },
+
+      {
+        "selector": "enumMember",
+        "format": ["PascalCase"]
+      },
+
+      {
+        "selector": "objectLiteralProperty",
+        "format": null
+      },
+
+      {
+        "selector": "objectLiteralMethod",
+        "format": ["camelCase", "snake_case"]
+      }
+    ]
   }
 }

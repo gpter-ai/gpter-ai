@@ -12,6 +12,8 @@ import { UserConfig } from '@/data/types';
 import { useApiService } from '@/hooks/useApiService';
 import { OPENAI_API_KEY_PATTERN } from '../constants';
 import HelpModal from '../HelpModal';
+import { getUserAgent } from '@/utils/userAgent';
+import { SupportedAgents } from '@/utils/types';
 
 type Props = {
   initValues: Partial<UserConfig>;
@@ -26,6 +28,8 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
   const [apiKeyError, setApiKeyError] = useState<string>('');
 
   const [helpModalVisible, setHelpModalVisible] = useState<boolean>(false);
+
+  const userAgent = getUserAgent();
 
   useEffect(() => {
     setApiKey(initValues?.apiKey || '');
@@ -131,14 +135,16 @@ const ConfigModal: FC<Props> = ({ visible, onConfirm, initValues }) => {
             }}
           />
         </FormField>
-        <FormField>
-          <Toggle
-            checked={minimizeOnClose}
-            onChange={(e) => setMinimizeOnClose(e.detail.checked)}
-          >
-            Minimize on close
-          </Toggle>
-        </FormField>
+        {userAgent === SupportedAgents.Electron && (
+          <FormField>
+            <Toggle
+              checked={minimizeOnClose}
+              onChange={(e) => setMinimizeOnClose(e.detail.checked)}
+            >
+              Minimize on close
+            </Toggle>
+          </FormField>
+        )}
       </SpaceBetween>
       <HelpModal visible={helpModalVisible} setVisible={setHelpModalVisible} />
     </Modal>
