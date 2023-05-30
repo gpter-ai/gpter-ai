@@ -52,7 +52,9 @@ For other scripts check out **./package.json**
 
 # Contributions
 
-We want this tool to be alive and evolving. We want more ideas from the community and we are happy about potential contributions. Here a couple of tips for you if you want to bring in your programming effort:
+We want this tool to be alive and evolving. We want more ideas from the community and we are happy about potential contributions.
+
+Here a couple of _tips_ for you if you want to bring in your programming effort:
 
 - Check out our issues. Especially the ones labelled as 'help wanted' and 'good first issue'
 
@@ -63,3 +65,10 @@ We want this tool to be alive and evolving. We want more ideas from the communit
 - Try to be reasonably fast. If we see an issue is taken but no progress was made for a while - we might remove the WIP label and/or do it ourselves.
 
 - Submitting an issue, design suggestion or an advice is also a contribution!
+
+The _process_ for a contribution is pretty standard:
+
+1. Create your own fork of gpter-ai repo.
+2. Make changes in your fork.
+3. Submit a Pull Request to _gpter-ai/gpter-ai_ from the branch with your changes in the forked repo.
+4. Wait for one of the collaborators to review and either merge your change or leave comments.
