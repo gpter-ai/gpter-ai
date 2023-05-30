@@ -1,12 +1,26 @@
 import UAParser from 'ua-parser-js';
-import { SupportedAgents } from './types';
+import { SupportedAgents, SupportedSystems } from './types';
 
-const browserName = new UAParser().getResult().browser.name;
+const result = new UAParser().getResult();
 
-export const getUserAgent = (): SupportedAgents => {
+const getUserAgent = (): SupportedAgents => {
+  const browserName = result.browser.name;
+
   if (!browserName || browserName.toLowerCase() !== SupportedAgents.Electron) {
     return SupportedAgents.Browser;
   }
 
   return SupportedAgents.Electron;
+};
+
+export const isElectron = (): boolean => {
+  return getUserAgent() === SupportedAgents.Electron;
+};
+
+export const isBrowser = (): boolean => {
+  return !isElectron();
+};
+
+export const isMacOs = (): boolean => {
+  return result.os.name === SupportedSystems.MacOS;
 };

@@ -21,6 +21,6 @@
     },
     "types": ["@types/jest"]
   },
-  "include": ["src", "electron"],
+  "include": ["src", "electron", "declarations.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

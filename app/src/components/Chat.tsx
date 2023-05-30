@@ -14,7 +14,6 @@ import { FC, useCallback, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
-import { useKeysProvider } from '@/hooks/useKeysProvider';
 import { AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
@@ -37,7 +36,6 @@ const Chat: FC<object> = () => {
 
   const storageProvider = useStorageProvider();
   const { chatService } = useChatService();
-  const { shiftPressed } = useKeysProvider();
 
   const { selectedAssistant, selectDefaultAssistant } = useAssistantsProvider();
 
@@ -188,7 +186,7 @@ const Chat: FC<object> = () => {
   const handleChatKeyDown = (
     event: CustomEvent<InputProps.KeyDetail>,
   ): void => {
-    if (receivingInProgress || shiftPressed) {
+    if (receivingInProgress || event.detail.shiftKey) {
       return;
     }
 
