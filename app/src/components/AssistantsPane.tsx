@@ -1,13 +1,12 @@
 import { FC, useState } from 'react';
-import useKeypress from 'react-use-keypress';
 import SpaceBetween from '@cloudscape-design/components/space-between';
 import Button from '@cloudscape-design/components/button';
 import { Container, Header, Icon } from '@cloudscape-design/components';
 import ChooseAssistantModal from './ChooseAssistantModal';
-import { isMacOs } from '@/utils/userAgent';
 
 import './AssistantsPane.scss';
 import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
+import { useKeydownHandlerByCode } from '@/hooks/useKeyDownHandler';
 
 const AssistantsPane: FC<object> = () => {
   const [assistantSelectionModalVisible, setAssistantSelectionModalVisible] =
@@ -19,14 +18,6 @@ const AssistantsPane: FC<object> = () => {
   const selectedAssistantIndex = assistants.findIndex(
     (a) => a.id === selectedAssistant?.id,
   );
-
-  const commandKeyPressed = (event: KeyboardEvent): boolean => {
-    if (isMacOs()) {
-      return event.metaKey;
-    }
-
-    return event.ctrlKey;
-  };
 
   const selectAssistantByIndex = (index: number): void => {
     if (index < 0 || index >= assistants.length) {
@@ -60,27 +51,45 @@ const AssistantsPane: FC<object> = () => {
     selectAssistantById(assistants[selectedAssistantIndex - 1]?.id);
   };
 
-  useKeypress(['ArrowLeft', 'ArrowRight'], (event: KeyboardEvent) => {
-    if (!(commandKeyPressed(event) && event.altKey)) {
-      return;
-    }
+  useKeydownHandlerByCode(
+    ['ArrowLeft', 'ArrowRight'],
+    (event: KeyboardEvent) => {
+      if (!event.altKey) {
+        return;
+      }
 
-    if (event.key === 'ArrowLeft') {
-      selectPreviousAssistant();
-    }
+      if (event.key === 'ArrowLeft') {
+        selectPreviousAssistant();
+      }
 
-    if (event.key === 'ArrowRight') {
-      selectNextAssistant();
-    }
-  });
+      if (event.key === 'ArrowRight') {
+        selectNextAssistant();
+      }
+    },
+  );
 
-  useKeypress(['1', '2', '3', '4', '5', '6', '7', '8', '9'], (event) => {
-    if (!commandKeyPressed(event)) {
-      return;
-    }
+  useKeydownHandlerByCode(
+    [
+      'Digit1',
+      'Digit2',
+      'Digit3',
+      'Digit4',
+      'Digit5',
+      'Digit6',
+      'Digit7',
+      'Digit8',
+      'Digit9',
+    ],
+    (event) => {
+      if (!event.altKey) {
+        return;
+      }
 
-    selectAssistantByIndex(parseInt(event.key, 10) - 1);
-  });
+      const digit = parseInt(event.code.replace('Digit', ''), 10);
+
+      selectAssistantByIndex(digit - 1);
+    },
+  );
 
   // @TODO - get proper svg for pinned
   return (
