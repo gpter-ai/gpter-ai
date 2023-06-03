@@ -35,7 +35,7 @@ const CodeHighlight: CodeComponent = (props) => {
         <button
           className="chat-message__code-copy"
           type="button"
-          onClick={() => navigator.clipboard.writeText(code)}
+          onClick={() => navigator.clipboard.writeText(String(children))}
         >
           <Box variant="span" color="inherit" margin={{ right: 'xs' }}>
             <Icon name="copy" />
