@@ -52,19 +52,21 @@ const AssistantsPane: FC<object> = () => {
   };
 
   useKeydownHandlerByCode(
-    ['ArrowLeft', 'ArrowRight'],
+    ['BracketLeft', 'BracketRight'],
     (event: KeyboardEvent) => {
-      if (!event.altKey) {
+      if (!event.altKey || !event.shiftKey) {
         return;
       }
 
-      if (event.key === 'ArrowLeft') {
+      if (event.code === 'BracketLeft') {
         selectPreviousAssistant();
       }
 
-      if (event.key === 'ArrowRight') {
+      if (event.code === 'BracketRight') {
         selectNextAssistant();
       }
+
+      event.preventDefault();
     },
   );
 
@@ -88,6 +90,7 @@ const AssistantsPane: FC<object> = () => {
       const digit = parseInt(event.code.replace('Digit', ''), 10);
 
       selectAssistantByIndex(digit - 1);
+      event.preventDefault();
     },
   );
 
