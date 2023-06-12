@@ -23,4 +23,6 @@ export interface StorageProvider {
 
   pinAssistant(id: string): Promise<void>;
   unpinAssistant(id: string): Promise<void>;
+
+  getLastChunk(assistantId: string): Promise<Nullable<Chunk>>;
 }

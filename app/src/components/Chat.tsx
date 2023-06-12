@@ -11,14 +11,12 @@ import {
   Textarea,
 } from '@cloudscape-design/components';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
 import { useChatService } from '@/data/ChatService';
-import { ChatMessage } from './types';
 import { ConversationView } from '@/components/ConversationView';
 
 import './Chat.scss';
@@ -40,18 +38,6 @@ const Chat: FC<object> = () => {
   const { selectedAssistant, selectDefaultAssistant } = useAssistantsProvider();
 
   assertNonNullable(selectedAssistant);
-
-  const fetchHistory = (): Promise<ChatMessage[]> => {
-    return storageProvider
-      .getChunksByAssistant(selectedAssistant.id)
-      .then(chatService.convertChunksToMessages);
-  };
-
-  const history: ChatMessage[] = useLiveQuery(
-    fetchHistory,
-    [storageProvider, selectedAssistant.id],
-    [],
-  );
 
   const assistantReceivingInProgress =
     chatService.receivingInProgress[selectedAssistant.id];
@@ -205,7 +191,7 @@ const Chat: FC<object> = () => {
       }
     >
       <div className="header__line" />
-      <ConversationView messages={history} />
+      <ConversationView />
       <Box margin={{ vertical: 'm' }}>
         <hr />
       </Box>
