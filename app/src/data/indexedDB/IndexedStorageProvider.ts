@@ -86,4 +86,11 @@ export class IndexedStorageProvider implements StorageProvider {
   async unpinAssistant(id: string): Promise<void> {
     this.#db.assistants.update(id, { pinnedTime: null });
   }
+
+  async getLastChunk(assistantId: string): Promise<Nullable<Chunk>> {
+    return this.#db.chunks
+      .orderBy('timestamp')
+      .filter((x) => x.assistantId === assistantId)
+      .last();
+  }
 }

@@ -138,15 +138,18 @@ export class ChatService {
     };
 
     await this.storageProvider.createChunk(messageChunk);
-    await this.storageProvider.createChunk(doneChunk);
-    const sessionHistory = await this.getSessionHistory(assistantId);
 
-    const messages =
-      role === 'system'
-        ? sessionHistory.concat(promptServiceMessages)
-        : sessionHistory;
+    setTimeout(async () => {
+      await this.storageProvider.createChunk(doneChunk);
+      const sessionHistory = await this.getSessionHistory(assistantId);
 
-    await this.onMessageSubmit(assistantId, messages, onError);
+      const messages =
+        role === 'system'
+          ? sessionHistory.concat(promptServiceMessages)
+          : sessionHistory;
+
+      await this.onMessageSubmit(assistantId, messages, onError);
+    }, 50);
   }
 
   private async onMessageSubmit(
