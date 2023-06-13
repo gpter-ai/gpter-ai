@@ -10,47 +10,46 @@ import {
   NonCancelableCustomEvent,
   Textarea,
 } from '@cloudscape-design/components';
-import { FC, useCallback, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { AssistantFormFields } from '@/data/types';
 import { useAssistantModal } from '@/context/AssistantModal';
 import DangerModal from './DangerModal';
-import { useChatService } from '@/data/ChatService';
 import { ConversationView } from '@/components/ConversationView';
 
 import './Chat.scss';
-import ApiError from '@/api/error/ApiError';
 import { assertNonNullable } from '@/utils/asserts';
 import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
+import { useApiService } from '@/hooks/useApiService';
+import { ChatService, ChatState } from '@/data/ChatService';
 
 const Chat: FC<object> = () => {
   const [text, setText] = useState('');
   const [inputError, setInputError] = useState('');
-  const [receivingInProgress, setReceivingInProgress] = useState(false);
 
   const [removalModalVisible, setRemovalModalVisible] = useState(false);
   const { containerRef, update: updateTextAreaSize } = useAutoGrowTextArea();
+  const [receivingInProgress, setReceivingInProgress] = useState(false);
 
   const storageProvider = useStorageProvider();
-  const { chatService } = useChatService();
-
   const { selectedAssistant, selectDefaultAssistant } = useAssistantsProvider();
+
+  const { apiService } = useApiService();
 
   assertNonNullable(selectedAssistant);
 
-  const assistantReceivingInProgress =
-    chatService.receivingInProgress[selectedAssistant.id];
+  const onChatStateChange = (state: ChatState): void => {
+    setReceivingInProgress(!!state.receivingInProgress);
+    setInputError(state.error?.message ?? '');
+  };
 
-  useEffect(() => {
-    setReceivingInProgress(
-      chatService.receivingInProgress[selectedAssistant.id],
-    );
-  }, [
-    assistantReceivingInProgress,
-    chatService.receivingInProgress,
+  const chatService = new ChatService(
+    storageProvider,
+    apiService,
     selectedAssistant.id,
-  ]);
+    onChatStateChange,
+  );
 
   useEffect(() => {
     if (text === '') {
@@ -71,12 +70,7 @@ const Chat: FC<object> = () => {
     props: AssistantFormFields,
   ): Promise<void> => {
     if (props.prompt !== selectedAssistant.prompt) {
-      await chatService.submitMessage(
-        props.prompt,
-        selectedAssistant.id,
-        'system',
-        onApiError,
-      );
+      await chatService.submitMessage(props.prompt, 'system');
     }
   };
 
@@ -130,10 +124,6 @@ const Chat: FC<object> = () => {
     </ButtonDropdown>
   );
 
-  const onApiError = useCallback((error: ApiError): void => {
-    setInputError(error.message);
-  }, []);
-
   const onMessageSubmit = async (): Promise<void> => {
     if (!text.trim()) {
       setInputError('Please input your text');
@@ -141,18 +131,11 @@ const Chat: FC<object> = () => {
     }
 
     setText('');
-    await chatService.submitMessage(
-      `${text}`,
-      selectedAssistant.id,
-      'user',
-      onApiError,
-    );
+    await chatService.submitMessage(`${text}`, 'user');
   };
 
   const onStopButtonClick = (): void => {
-    chatService.abortEventsReceiving(selectedAssistant.id);
-    // @TODO - I don't like it, I'd rather have it set automatically based on the ChatService state
-    setReceivingInProgress(false);
+    chatService.abortEventsReceiving();
   };
 
   const SubmitButton = (
