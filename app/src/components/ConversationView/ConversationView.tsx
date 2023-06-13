@@ -5,9 +5,9 @@ import { ConversationHistory } from '../ConversationHistory';
 import { ActiveMessage } from '../ActiveMessage';
 import { ChatItem } from './types';
 import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
-import { useChatService } from '@/data/ChatService';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { chatMessagesToChatItems } from './utils';
+import { convertChunksToMessages } from '@/utils/chunks';
 
 export const ConversationView: React.FC<object> = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,7 +19,6 @@ export const ConversationView: React.FC<object> = () => {
   };
 
   const storageProvider = useStorageProvider();
-  const { chatService } = useChatService();
 
   const { selectedAssistant } = useAssistantsProvider();
 
@@ -32,9 +31,9 @@ export const ConversationView: React.FC<object> = () => {
 
     storageProvider
       .getChunksByAssistant(selectedAssistant.id)
-      .then(chatService.convertChunksToMessages)
+      .then(convertChunksToMessages)
       .then((msgs) => setHistory(chatMessagesToChatItems(msgs)));
-  }, [chatService.convertChunksToMessages, selectedAssistant, storageProvider]);
+  }, [selectedAssistant, storageProvider]);
 
   useEffect(() => {
     scrollToBottom();

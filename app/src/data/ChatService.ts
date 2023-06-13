@@ -2,7 +2,7 @@ import Dexie from 'dexie';
 import { ChatCompletionRequestMessage } from 'openai';
 import { StorageProvider } from '@/data/StorageProvider';
 import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
-import { Chunk, ChunkContentKind, PartialChunkData } from './types';
+import { ChunkContentKind, PartialChunkData } from './types';
 import { assertNonNullable } from '@/utils/asserts';
 // TODO remove import from components
 import { ChatMessage } from '@/components/types';
@@ -13,8 +13,9 @@ import { useApiService } from '@/hooks/useApiService';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { promptServiceMessages } from './serviceMessages';
 import TimeoutError from '@/api/error/TimeoutError';
+import { convertChunksToMessages } from '@/utils/chunks';
 
-export class ChatService {
+class ChatService {
   public receivingInProgress: Record<string, boolean> = {};
 
   constructor(
@@ -28,38 +29,6 @@ export class ChatService {
   ): ChatCompletionRequestMessage {
     const { role, content } = chatMessage;
     return { role, content };
-  }
-
-  convertChunksToMessages(chunks: Chunk[]): ChatMessage[] {
-    if (chunks.length === 0) return [];
-    chunks.sort((a, b) => a.timestamp - b.timestamp);
-    const messages: ChatMessage[] = [];
-
-    let currentMessage = {
-      content: '',
-      finished: false,
-    } as ChatMessage;
-
-    for (const chunk of chunks) {
-      if (chunk.content.kind === ChunkContentKind.DATA) {
-        currentMessage.content += chunk.content.message;
-        currentMessage.timestamp = chunk.timestamp;
-        currentMessage.role = chunk.role;
-      } else {
-        currentMessage.finished = true;
-        messages.push(currentMessage);
-        currentMessage = {
-          content: '',
-          finished: false,
-        } as ChatMessage;
-      }
-    }
-
-    if (currentMessage.content.length > 0) {
-      messages.push(currentMessage);
-    }
-
-    return messages;
   }
 
   async getSessionHistory(assistantId: string): Promise<ChatMessage[]> {
@@ -84,7 +53,7 @@ export class ChatService {
 
     const sessionStartDate = getSessionStartDate(timeStamps);
 
-    const messages = this.convertChunksToMessages(
+    const messages = convertChunksToMessages(
       chunks.filter((chunk) => chunk.timestamp >= sessionStartDate),
     );
 
