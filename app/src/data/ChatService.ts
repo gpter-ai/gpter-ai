@@ -1,38 +1,35 @@
 import Dexie from 'dexie';
-import { ChatCompletionRequestMessage } from 'openai';
-import { StorageProvider } from '@/data/StorageProvider';
-import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
-import { ChunkContentKind, PartialChunkData } from './types';
-import { assertNonNullable } from '@/utils/asserts';
-// TODO remove import from components
-import { ChatMessage } from '@/components/types';
-import { getSessionStartDate } from './sessionHelper';
-import { Nullable } from '@/types';
 import ApiError from '@/api/error/ApiError';
-import { useApiService } from '@/hooks/useApiService';
-import { useStorageProvider } from '@/hooks/useStorageProvider';
-import { promptServiceMessages } from './serviceMessages';
 import TimeoutError from '@/api/error/TimeoutError';
+import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
+import { ChatMessage } from '@/components/types';
+import { StorageProvider } from '@/data';
+import { promptServiceMessages } from '@/data/serviceMessages';
+import { getSessionStartDate } from '@/data/sessionHelper';
+import { ChunkContentKind, PartialChunkData } from '@/data/types';
+import { assertNonNullable } from '@/utils/asserts';
 import { convertChunksToMessages } from '@/utils/chunks';
+import { chatMessageToRequestMessage } from '@/utils/messages';
 
-class ChatService {
-  public receivingInProgress: Record<string, boolean> = {};
+export type ChatState = {
+  receivingInProgress: boolean;
+  error?: ApiError;
+};
+
+export class ChatService {
+  abortController: AbortController;
 
   constructor(
     private storageProvider: StorageProvider,
     private apiService: ApiService,
-    private abortController: AbortController,
-  ) {}
-
-  chatMessageToRequestMessage(
-    chatMessage: ChatMessage,
-  ): ChatCompletionRequestMessage {
-    const { role, content } = chatMessage;
-    return { role, content };
+    private assistantId: string,
+    private onStateChange?: (state: ChatState) => void,
+  ) {
+    this.abortController = new AbortController();
   }
 
-  async getSessionHistory(assistantId: string): Promise<ChatMessage[]> {
-    const assistant = await this.storageProvider.getAssistant(assistantId);
+  async getSessionHistory(): Promise<ChatMessage[]> {
+    const assistant = await this.storageProvider.getAssistant(this.assistantId);
 
     assertNonNullable(assistant);
 
@@ -44,7 +41,7 @@ class ChatService {
     };
 
     const chunks = await this.storageProvider
-      .getChunksByAssistant(assistantId)
+      .getChunksByAssistant(this.assistantId)
       .then((result) => result.sort((a, b) => a.timestamp - b.timestamp));
 
     const timeStamps = chunks
@@ -68,78 +65,72 @@ class ChatService {
     return [promptMessage, ...messages];
   }
 
-  public async abortEventsReceiving(assistantId: string): Promise<void> {
+  public async abortEventsReceiving(): Promise<void> {
     this.abortController.abort();
     this.abortController = new AbortController();
 
     Dexie.currentTransaction && Dexie.currentTransaction.abort();
 
     const lastChunk = await this.storageProvider.getLastChunkByAssistant(
-      assistantId,
+      this.assistantId,
     );
     if (lastChunk && lastChunk.content.kind !== ChunkContentKind.DONE) {
       await this.storageProvider.createChunk({
         content: { kind: ChunkContentKind.DONE },
         role: 'assistant',
-        assistantId,
+        assistantId: this.assistantId,
       });
     }
 
-    this.receivingInProgress[assistantId] = false;
+    this.onStateChange && this.onStateChange({ receivingInProgress: false });
   }
 
   public async submitMessage(
     message: string,
-    assistantId: string,
     role: 'user' | 'system' = 'user',
-    onError?: (error: ApiError) => void,
   ): Promise<void> {
     const messageChunk: PartialChunkData = {
       content: { message, kind: ChunkContentKind.DATA },
       role,
-      assistantId,
+      assistantId: this.assistantId,
     };
 
     const doneChunk: PartialChunkData = {
       content: { kind: ChunkContentKind.DONE },
       role,
-      assistantId,
+      assistantId: this.assistantId,
     };
 
     await this.storageProvider.createChunk(messageChunk);
 
     setTimeout(async () => {
       await this.storageProvider.createChunk(doneChunk);
-      const sessionHistory = await this.getSessionHistory(assistantId);
+      const sessionHistory = await this.getSessionHistory();
 
       const messages =
         role === 'system'
           ? sessionHistory.concat(promptServiceMessages)
           : sessionHistory;
 
-      await this.onMessageSubmit(assistantId, messages, onError);
+      await this.onMessageSubmit(messages);
     }, 50);
   }
 
-  private async onMessageSubmit(
-    assistantId: string,
-    messages: ChatMessage[],
-    onError?: (error: ApiError) => void,
-  ): Promise<void> {
+  private async onMessageSubmit(messages: ChatMessage[]): Promise<void> {
     const processResponse = (response: ApiResponse): void => {
       // @TODO - consider using finish reason instead
       if (response.kind === ApiResponseType.Done) {
         this.storageProvider.createChunk({
           content: { kind: ChunkContentKind.DONE },
           role: 'assistant',
-          assistantId,
+          assistantId: this.assistantId,
         });
         return;
       }
 
       this.storageProvider.createChunk({
         role: 'assistant',
-        assistantId,
+        assistantId: this.assistantId,
         content: {
           kind: ChunkContentKind.DATA,
           message: response.message,
@@ -148,47 +139,27 @@ class ChatService {
     };
 
     const abortCallback = async (): Promise<void> => {
-      await this.abortEventsReceiving(assistantId);
+      await this.abortEventsReceiving();
     };
 
     window.addEventListener('beforeunload', abortCallback);
 
     try {
-      this.receivingInProgress[assistantId] = true;
+      this.onStateChange && this.onStateChange({ receivingInProgress: true });
       await this.apiService.sendMessages(
-        messages.map(this.chatMessageToRequestMessage),
+        messages.map(chatMessageToRequestMessage),
         processResponse,
         this.abortController.signal,
       );
     } catch (error) {
       if (error instanceof ApiError || error instanceof TimeoutError) {
-        await this.abortEventsReceiving(assistantId);
-        onError && onError(error as ApiError);
+        await this.abortEventsReceiving();
+        this.onStateChange &&
+          this.onStateChange({ error, receivingInProgress: false });
       }
     } finally {
-      this.receivingInProgress[assistantId] = false;
+      this.onStateChange && this.onStateChange({ receivingInProgress: false });
       window.removeEventListener('beforeunload', abortCallback);
     }
   }
 }
-
-let chatService: Nullable<ChatService> = null;
-
-export const useChatService = (): {
-  chatService: ChatService;
-} => {
-  const storageProvider = useStorageProvider();
-  const { apiService } = useApiService();
-
-  if (chatService) {
-    return { chatService };
-  }
-
-  chatService = new ChatService(
-    storageProvider,
-    apiService,
-    new AbortController(),
-  );
-
-  return { chatService };
-};
