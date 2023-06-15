@@ -22,7 +22,7 @@ type ChunkContentError = {
   message: string;
 };
 
-type ChunkContentData = {
+export type ChunkContentData = {
   kind: ChunkContentKind.DATA;
   message: string;
 };

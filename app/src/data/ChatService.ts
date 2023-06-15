@@ -1,4 +1,5 @@
 import Dexie from 'dexie';
+import hash from 'object-hash';
 import ApiError from '@/api/error/ApiError';
 import TimeoutError from '@/api/error/TimeoutError';
 import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
@@ -6,26 +7,82 @@ import { ChatMessage } from '@/components/types';
 import { StorageProvider } from '@/data';
 import { promptServiceMessages } from '@/data/serviceMessages';
 import { getSessionStartDate } from '@/data/sessionHelper';
-import { ChunkContentKind, PartialChunkData } from '@/data/types';
+import {
+  ChunkContentData,
+  ChunkContentKind,
+  PartialChunkData,
+} from '@/data/types';
 import { assertNonNullable } from '@/utils/asserts';
 import { convertChunksToMessages } from '@/utils/chunks';
 import { chatMessageToRequestMessage } from '@/utils/messages';
 
 export type ChatState = {
-  receivingInProgress: boolean;
+  receivingInProgress?: boolean;
   error?: ApiError;
+  activeMessage?: ChatMessage;
+  lastMessage?: ChatMessage;
 };
 
-export class ChatService {
-  abortController: AbortController;
+type ChatStateListener = (state: ChatState) => void;
 
-  constructor(
+const services: Map<string, ChatService> = new Map();
+
+export class ChatService {
+  #abortController: AbortController = new AbortController();
+
+  #listeners: Map<string, ChatStateListener> = new Map();
+
+  #state: ChatState = {};
+
+  private constructor(
     private storageProvider: StorageProvider,
     private apiService: ApiService,
     private assistantId: string,
-    private onStateChange?: (state: ChatState) => void,
-  ) {
-    this.abortController = new AbortController();
+  ) {}
+
+  public static getInstance(
+    storageProvider: StorageProvider,
+    apiService: ApiService,
+    assistantId: string,
+  ): ChatService {
+    if (services.has(assistantId)) {
+      return services.get(assistantId) as ChatService;
+    }
+
+    services.set(
+      assistantId,
+      new ChatService(storageProvider, apiService, assistantId),
+    );
+
+    return services.get(assistantId) as ChatService;
+  }
+
+  registerStateListener(callback: (state: ChatState) => void): void {
+    const cbHash = hash(callback);
+
+    if (this.#listeners.has(cbHash)) {
+      return;
+    }
+
+    this.#listeners.set(cbHash, callback);
+  }
+
+  unregisterStateListener(callback: (state: ChatState) => void): void {
+    const cbHash = hash(callback);
+
+    if (!this.#listeners.has(cbHash)) {
+      return;
+    }
+
+    this.#listeners.delete(cbHash);
+  }
+
+  updateState(state: ChatState): void {
+    this.#state = { ...this.#state, ...state };
+
+    for (const listener of this.#listeners.values()) {
+      listener(this.#state);
+    }
   }
 
   async getSessionHistory(): Promise<ChatMessage[]> {
@@ -66,8 +123,8 @@ export class ChatService {
   }
 
   public async abortEventsReceiving(): Promise<void> {
-    this.abortController.abort();
-    this.abortController = new AbortController();
+    this.#abortController.abort();
+    this.#abortController = new AbortController();
 
     Dexie.currentTransaction && Dexie.currentTransaction.abort();
 
@@ -82,7 +139,7 @@ export class ChatService {
       });
     }
 
-    this.onStateChange && this.onStateChange({ receivingInProgress: false });
+    this.updateState({ receivingInProgress: false });
   }
 
   public async submitMessage(
@@ -102,33 +159,43 @@ export class ChatService {
     };
 
     await this.storageProvider.createChunk(messageChunk);
+    await this.storageProvider.createChunk(doneChunk);
 
-    setTimeout(async () => {
-      await this.storageProvider.createChunk(doneChunk);
-      const sessionHistory = await this.getSessionHistory();
+    this.updateState({
+      lastMessage: {
+        role,
+        content: (messageChunk.content as ChunkContentData).message,
+        timestamp: Date.now(),
+        finished: true,
+      },
+    });
 
-      const messages =
-        role === 'system'
-          ? sessionHistory.concat(promptServiceMessages)
-          : sessionHistory;
+    const sessionHistory = await this.getSessionHistory();
 
-      await this.onMessageSubmit(messages);
-    }, 50);
+    const messages =
+      role === 'system'
+        ? sessionHistory.concat(promptServiceMessages)
+        : sessionHistory;
+
+    await this.onMessageSubmit(messages);
   }
 
   private async onMessageSubmit(messages: ChatMessage[]): Promise<void> {
-    const processResponse = (response: ApiResponse): void => {
+    const processResponse = async (response: ApiResponse): Promise<void> => {
       // @TODO - consider using finish reason instead
       if (response.kind === ApiResponseType.Done) {
-        this.storageProvider.createChunk({
+        await this.storageProvider.createChunk({
           content: { kind: ChunkContentKind.DONE },
           role: 'assistant',
           assistantId: this.assistantId,
         });
+
+        assertNonNullable(this.#state.activeMessage);
+
         return;
       }
 
-      this.storageProvider.createChunk({
+      await this.storageProvider.createChunk({
         role: 'assistant',
         assistantId: this.assistantId,
         content: {
@@ -136,6 +203,24 @@ export class ChatService {
           message: response.message,
         },
       });
+
+      if (!this.#state.activeMessage) {
+        this.updateState({
+          activeMessage: {
+            role: 'assistant',
+            content: response.message,
+            timestamp: Date.now(),
+            finished: false,
+          },
+        });
+      } else {
+        this.updateState({
+          activeMessage: {
+            ...this.#state.activeMessage,
+            content: this.#state.activeMessage.content + response.message,
+          },
+        });
+      }
     };
 
     const abortCallback = async (): Promise<void> => {
@@ -145,20 +230,25 @@ export class ChatService {
     window.addEventListener('beforeunload', abortCallback);
 
     try {
-      this.onStateChange && this.onStateChange({ receivingInProgress: true });
+      this.updateState({ receivingInProgress: true });
       await this.apiService.sendMessages(
         messages.map(chatMessageToRequestMessage),
         processResponse,
-        this.abortController.signal,
+        this.#abortController.signal,
       );
     } catch (error) {
       if (error instanceof ApiError || error instanceof TimeoutError) {
         await this.abortEventsReceiving();
-        this.onStateChange &&
-          this.onStateChange({ error, receivingInProgress: false });
+        this.updateState({ error });
       }
     } finally {
-      this.onStateChange && this.onStateChange({ receivingInProgress: false });
+      this.updateState({
+        receivingInProgress: false,
+        lastMessage: this.#state.activeMessage
+          ? { ...this.#state.activeMessage, finished: true }
+          : this.#state.lastMessage,
+        activeMessage: undefined,
+      });
       window.removeEventListener('beforeunload', abortCallback);
     }
   }

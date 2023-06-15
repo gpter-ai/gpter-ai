@@ -12,8 +12,6 @@ import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { Assistant, AssistantFormFields } from '@/data/types';
 import { Prompt, prompts } from '@/data/prompts';
 import { useAssistantsProvider } from '@/hooks/useAssistantsProvider';
-import { ChatService } from '@/data/ChatService';
-import { useApiService } from '@/hooks/useApiService';
 
 type AssistantsCardsProps = {
   onChooseAssistant: (item: Prompt) => void;
@@ -64,7 +62,6 @@ const ChooseAssistantModal: FC<Props> = ({ visible, setVisible }) => {
   const assistantModal = useAssistantModal();
 
   const storageProvider = useStorageProvider();
-  const { apiService } = useApiService();
 
   const { setSelectedAssistant } = useAssistantsProvider();
   const [filterText, setFilterText] = useState('');
@@ -75,14 +72,6 @@ const ChooseAssistantModal: FC<Props> = ({ visible, setVisible }) => {
       .then((assistant: Assistant) => {
         setSelectedAssistant(assistant);
         setFilterText('');
-
-        const chatService = new ChatService(
-          storageProvider,
-          apiService,
-          assistant.id,
-        );
-
-        chatService.submitMessage(assistant.prompt, 'system');
       })
       .then(() => setVisible(false));
   };
