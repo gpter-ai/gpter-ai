@@ -10,7 +10,7 @@ import {
   NonCancelableCustomEvent,
   Textarea,
 } from '@cloudscape-design/components';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import { useAutoGrowTextArea } from '@/hooks/useAutoGrowTextArea';
 import { useStorageProvider } from '@/hooks/useStorageProvider';
 import { AssistantFormFields } from '@/data/types';
@@ -44,12 +44,19 @@ const Chat: FC<object> = () => {
     setInputError(state.error?.message ?? '');
   };
 
-  const chatService = new ChatService(
-    storageProvider,
-    apiService,
-    selectedAssistant.id,
-    onChatStateChange,
+  const chatService = useMemo(
+    () =>
+      ChatService.getInstance(
+        storageProvider,
+        apiService,
+        selectedAssistant.id,
+      ),
+    [storageProvider, apiService, selectedAssistant.id],
   );
+
+  useEffect(() => {
+    chatService.registerStateListener(onChatStateChange);
+  }, [chatService]);
 
   useEffect(() => {
     if (text === '') {
