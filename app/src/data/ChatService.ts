@@ -1,5 +1,6 @@
 import Dexie from 'dexie';
 import hash from 'object-hash';
+import merge from 'lodash/merge';
 import ApiError from '@/api/error/ApiError';
 import TimeoutError from '@/api/error/TimeoutError';
 import { ApiResponse, ApiResponseType, ApiService } from '@/api/types';
@@ -15,12 +16,20 @@ import {
 import { assertNonNullable } from '@/utils/asserts';
 import { convertChunksToMessages } from '@/utils/chunks';
 import { chatMessageToRequestMessage } from '@/utils/messages';
+import { DeepPartial, Nullable } from '@/types';
 
 export type ChatState = {
-  receivingInProgress?: boolean;
-  error?: ApiError;
-  activeMessage?: ChatMessage;
-  lastMessage?: ChatMessage;
+  receivingInProgress: boolean;
+  error: Nullable<ApiError>;
+  activeMessage: Nullable<ChatMessage>;
+  lastMessage: Nullable<ChatMessage>;
+};
+
+const defaultState: ChatState = {
+  receivingInProgress: false,
+  activeMessage: null,
+  error: null,
+  lastMessage: null,
 };
 
 type ChatStateListener = (state: ChatState) => void;
@@ -32,7 +41,7 @@ export class ChatService {
 
   #listeners: Map<string, ChatStateListener> = new Map();
 
-  #state: ChatState = {};
+  #state: ChatState = defaultState;
 
   private constructor(
     private storageProvider: StorageProvider,
@@ -77,8 +86,8 @@ export class ChatService {
     this.#listeners.delete(cbHash);
   }
 
-  updateState(state: ChatState): void {
-    this.#state = { ...this.#state, ...state };
+  updateState(state: DeepPartial<ChatState>): void {
+    this.#state = merge({}, this.#state, state);
 
     for (const listener of this.#listeners.values()) {
       listener(this.#state);
@@ -230,7 +239,7 @@ export class ChatService {
     window.addEventListener('beforeunload', abortCallback);
 
     try {
-      this.updateState({ receivingInProgress: true });
+      this.updateState({ receivingInProgress: true, error: null });
       await this.apiService.sendMessages(
         messages.map(chatMessageToRequestMessage),
         processResponse,
@@ -247,7 +256,7 @@ export class ChatService {
         lastMessage: this.#state.activeMessage
           ? { ...this.#state.activeMessage, finished: true }
           : this.#state.lastMessage,
-        activeMessage: undefined,
+        activeMessage: null,
       });
       window.removeEventListener('beforeunload', abortCallback);
     }
