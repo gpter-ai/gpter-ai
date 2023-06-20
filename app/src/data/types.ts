@@ -8,7 +8,7 @@ export type Assistant = {
 
 export type AssistantFormFields = Pick<Assistant, 'name' | 'prompt'>;
 
-export type ChatGptRole = 'user' | 'assistant' | 'system';
+export type ChatGptRole = 'user' | 'assistant' | 'system' | 'function';
 
 export enum ChunkContentKind {
   ERROR = 'error',

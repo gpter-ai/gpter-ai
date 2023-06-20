@@ -21,6 +21,7 @@ import UnauhtorizedError from './error/UnauthorizedError';
 import GeneralError from './error/GeneralError';
 import { StorageProvider } from '@/data';
 import TimeoutError from './error/TimeoutError';
+import { functions } from './functions';
 
 const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
   implements ApiService
@@ -59,6 +60,7 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
     const requestParam: CreateChatCompletionRequest = {
       model: OPENAI_MODEL,
       messages,
+      functions,
       stream: true,
       max_tokens: MAX_RESPONSE_TOKENS,
     };
@@ -107,26 +109,46 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
           throw new GeneralError();
         },
         onmessage: (msg) => {
-          const apiResponse: ApiResponse =
-            msg.data === DATA_STREAM_DONE_INDICATOR
-              ? { kind: ApiResponseType.Done }
-              : {
-                  kind: ApiResponseType.Data,
-                  message: this.extractMessage(msg.data),
-                };
-          onResponse(apiResponse);
+          if (msg.data === DATA_STREAM_DONE_INDICATOR) {
+            onResponse({ kind: ApiResponseType.Done });
+            return;
+          }
+
+          const payload = JSON.parse(msg.data) as ApiResponsePayload;
+
+          if (
+            Array.isArray(payload.choices) &&
+            payload.choices[0]?.delta?.content
+          ) {
+            onResponse({
+              kind: ApiResponseType.Data,
+              message: payload.choices[0].delta.content,
+            });
+
+            return;
+          }
+
+          if (payload.choices[0].delta.function_call) {
+            onResponse({
+              kind: ApiResponseType.Function,
+              name: payload.choices[0].delta.function_call.name,
+              arguments: payload.choices[0].delta.function_call.arguments,
+            });
+
+            return;
+          }
+
+          if (payload.choices[0].finish_reason === 'function_call') {
+            onResponse({
+              kind: ApiResponseType.FunctionCall,
+            });
+          }
         },
         signal: abortSignal,
       },
     );
 
     return Promise.race([timeoutPromise, fetchPromise]);
-  }
-
-  private extractMessage(data: string): string {
-    const payload = JSON.parse(data) as ApiResponsePayload;
-
-    return payload.choices[0]?.delta?.content ?? '';
   }
 };
 
