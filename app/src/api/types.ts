@@ -24,6 +24,8 @@ export interface ApiService {
 export enum ApiResponseType {
   Done = 'Done',
   Data = 'Data',
+  Function = 'Function',
+  FunctionCall = 'FunctionCall',
 }
 
 export interface ApiResponseFinish {
@@ -46,9 +48,21 @@ export type ApiResponsePayload = Omit<
 
 export interface ApiResponseData {
   kind: ApiResponseType.Data;
-  // TODO: wait for types to be fixed
-  // https://github.com/openai/openai-node/issues/74
   message: string;
 }
 
-export type ApiResponse = ApiResponseFinish | ApiResponseData;
+export interface ApiResponseFunction {
+  kind: ApiResponseType.Function;
+  name?: string;
+  arguments?: string;
+}
+
+export interface ApiResponseFunctionCall {
+  kind: ApiResponseType.FunctionCall;
+}
+
+export type ApiResponse =
+  | ApiResponseFinish
+  | ApiResponseData
+  | ApiResponseFunction
+  | ApiResponseFunctionCall;

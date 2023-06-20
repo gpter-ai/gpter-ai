@@ -15,6 +15,7 @@ import {
 import { assertNonNullable } from '@/utils/asserts';
 import { convertChunksToMessages } from '@/utils/chunks';
 import { chatMessageToRequestMessage } from '@/utils/messages';
+import { functionMap } from '@/api/functions';
 
 export type ChatState = {
   receivingInProgress?: boolean;
@@ -33,6 +34,11 @@ export class ChatService {
   #listeners: Map<string, ChatStateListener> = new Map();
 
   #state: ChatState = {};
+
+  #currentFunctionInstructions: {
+    name: string;
+    arguments: string;
+  } = { name: '', arguments: '' };
 
   private constructor(
     private storageProvider: StorageProvider,
@@ -180,49 +186,87 @@ export class ChatService {
     await this.onMessageSubmit(messages);
   }
 
-  private async onMessageSubmit(messages: ChatMessage[]): Promise<void> {
-    const processResponse = async (response: ApiResponse): Promise<void> => {
-      // @TODO - consider using finish reason instead
-      if (response.kind === ApiResponseType.Done) {
+  private async processResponse(response: ApiResponse): Promise<void> {
+    switch (response.kind) {
+      case ApiResponseType.Done: {
+        if (!this.#state.activeMessage?.content) {
+          return;
+        }
+
         await this.storageProvider.createChunk({
           content: { kind: ChunkContentKind.DONE },
           role: 'assistant',
           assistantId: this.assistantId,
         });
 
-        assertNonNullable(this.#state.activeMessage);
+        return;
+      }
+
+      case ApiResponseType.Function: {
+        this.#currentFunctionInstructions.name += response.name ?? '';
+        this.#currentFunctionInstructions.arguments += response.arguments ?? '';
+        return;
+      }
+
+      case ApiResponseType.Data: {
+        await this.storageProvider.createChunk({
+          role: 'assistant',
+          assistantId: this.assistantId,
+          content: {
+            kind: ChunkContentKind.DATA,
+            message: response.message,
+          },
+        });
+
+        if (!this.#state.activeMessage) {
+          this.updateState({
+            activeMessage: {
+              role: 'assistant',
+              content: response.message,
+              timestamp: Date.now(),
+              finished: false,
+            },
+          });
+        } else {
+          this.updateState({
+            activeMessage: {
+              ...this.#state.activeMessage,
+              content: this.#state.activeMessage.content + response.message,
+            },
+          });
+        }
 
         return;
       }
 
-      await this.storageProvider.createChunk({
-        role: 'assistant',
-        assistantId: this.assistantId,
-        content: {
-          kind: ChunkContentKind.DATA,
-          message: response.message,
-        },
-      });
+      case ApiResponseType.FunctionCall: {
+        const requestedFunction = functionMap.get(
+          this.#currentFunctionInstructions.name,
+        );
 
-      if (!this.#state.activeMessage) {
-        this.updateState({
-          activeMessage: {
-            role: 'assistant',
-            content: response.message,
+        if (requestedFunction) {
+          const functionResponse = await requestedFunction(
+            JSON.parse(this.#currentFunctionInstructions.arguments),
+          );
+
+          const history = await this.getSessionHistory();
+          history.push({
+            role: 'function',
+            functionName: this.#currentFunctionInstructions.name,
+            content: JSON.stringify(functionResponse),
+            finished: true,
             timestamp: Date.now(),
-            finished: false,
-          },
-        });
-      } else {
-        this.updateState({
-          activeMessage: {
-            ...this.#state.activeMessage,
-            content: this.#state.activeMessage.content + response.message,
-          },
-        });
-      }
-    };
+          });
 
+          this.onMessageSubmit(history);
+        }
+
+        this.#currentFunctionInstructions = { name: '', arguments: '' };
+      }
+    }
+  }
+
+  private async onMessageSubmit(messages: ChatMessage[]): Promise<void> {
     const abortCallback = async (): Promise<void> => {
       await this.abortEventsReceiving();
     };
@@ -233,7 +277,7 @@ export class ChatService {
       this.updateState({ receivingInProgress: true });
       await this.apiService.sendMessages(
         messages.map(chatMessageToRequestMessage),
-        processResponse,
+        this.processResponse.bind(this),
         this.#abortController.signal,
       );
     } catch (error) {
