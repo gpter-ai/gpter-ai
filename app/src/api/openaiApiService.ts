@@ -108,9 +108,9 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
 
           throw new GeneralError();
         },
-        onmessage: (msg) => {
+        onmessage: async (msg) => {
           if (msg.data === DATA_STREAM_DONE_INDICATOR) {
-            onResponse({ kind: ApiResponseType.Done });
+            await onResponse({ kind: ApiResponseType.Done });
             return;
           }
 
@@ -120,7 +120,7 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
             Array.isArray(payload.choices) &&
             payload.choices[0]?.delta?.content
           ) {
-            onResponse({
+            await onResponse({
               kind: ApiResponseType.Data,
               message: payload.choices[0].delta.content,
             });
@@ -129,7 +129,7 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
           }
 
           if (payload.choices[0].delta.function_call) {
-            onResponse({
+            await onResponse({
               kind: ApiResponseType.Function,
               name: payload.choices[0].delta.function_call.name,
               arguments: payload.choices[0].delta.function_call.arguments,
@@ -139,7 +139,7 @@ const OpenAiApiService: ApiServiceConstructor = class OpenAiApiService
           }
 
           if (payload.choices[0].finish_reason === 'function_call') {
-            onResponse({
+            await onResponse({
               kind: ApiResponseType.FunctionCall,
             });
           }
