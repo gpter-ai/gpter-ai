@@ -16,6 +16,7 @@ import { assertNonNullable } from '@/utils/asserts';
 import { convertChunksToMessages } from '@/utils/chunks';
 import { chatMessageToRequestMessage } from '@/utils/messages';
 import { functionMap } from '@/api/functions';
+import GeneralError from '@/api/error/GeneralError';
 
 export type ChatState = {
   receivingInProgress?: boolean;
@@ -174,6 +175,7 @@ export class ChatService {
         timestamp: Date.now(),
         finished: true,
       },
+      error: undefined,
     });
 
     const sessionHistory = await this.getSessionHistory();
@@ -187,82 +189,91 @@ export class ChatService {
   }
 
   private async processResponse(response: ApiResponse): Promise<void> {
-    switch (response.kind) {
-      case ApiResponseType.Done: {
-        if (!this.#state.activeMessage?.content) {
+    try {
+      switch (response.kind) {
+        case ApiResponseType.Done: {
+          if (!this.#state.activeMessage?.content) {
+            return;
+          }
+
+          await this.storageProvider.createChunk({
+            content: { kind: ChunkContentKind.DONE },
+            role: 'assistant',
+            assistantId: this.assistantId,
+          });
+
           return;
         }
 
-        await this.storageProvider.createChunk({
-          content: { kind: ChunkContentKind.DONE },
-          role: 'assistant',
-          assistantId: this.assistantId,
-        });
-
-        return;
-      }
-
-      case ApiResponseType.Function: {
-        this.#currentFunctionInstructions.name += response.name ?? '';
-        this.#currentFunctionInstructions.arguments += response.arguments ?? '';
-        return;
-      }
-
-      case ApiResponseType.Data: {
-        await this.storageProvider.createChunk({
-          role: 'assistant',
-          assistantId: this.assistantId,
-          content: {
-            kind: ChunkContentKind.DATA,
-            message: response.message,
-          },
-        });
-
-        if (!this.#state.activeMessage) {
-          this.updateState({
-            activeMessage: {
-              role: 'assistant',
-              content: response.message,
-              timestamp: Date.now(),
-              finished: false,
-            },
-          });
-        } else {
-          this.updateState({
-            activeMessage: {
-              ...this.#state.activeMessage,
-              content: this.#state.activeMessage.content + response.message,
-            },
-          });
+        case ApiResponseType.Function: {
+          this.#currentFunctionInstructions.name += response.name ?? '';
+          this.#currentFunctionInstructions.arguments +=
+            response.arguments ?? '';
+          return;
         }
 
-        return;
-      }
+        case ApiResponseType.Data: {
+          await this.storageProvider.createChunk({
+            role: 'assistant',
+            assistantId: this.assistantId,
+            content: {
+              kind: ChunkContentKind.DATA,
+              message: response.message,
+            },
+          });
 
-      case ApiResponseType.FunctionCall: {
-        const requestedFunction = functionMap.get(
-          this.#currentFunctionInstructions.name,
-        );
+          if (!this.#state.activeMessage) {
+            this.updateState({
+              activeMessage: {
+                role: 'assistant',
+                content: response.message,
+                timestamp: Date.now(),
+                finished: false,
+              },
+            });
+          } else {
+            this.updateState({
+              activeMessage: {
+                ...this.#state.activeMessage,
+                content: this.#state.activeMessage.content + response.message,
+              },
+            });
+          }
 
-        if (requestedFunction) {
-          const functionResponse = await requestedFunction(
-            JSON.parse(this.#currentFunctionInstructions.arguments),
+          return;
+        }
+
+        case ApiResponseType.FunctionCall: {
+          const requestedFunction = functionMap.get(
+            this.#currentFunctionInstructions.name,
           );
 
-          const history = await this.getSessionHistory();
-          history.push({
-            role: 'function',
-            functionName: this.#currentFunctionInstructions.name,
-            content: JSON.stringify(functionResponse),
-            finished: true,
-            timestamp: Date.now(),
-          });
+          if (requestedFunction) {
+            const functionResponse = await requestedFunction(
+              JSON.parse(this.#currentFunctionInstructions.arguments),
+            );
 
-          this.onMessageSubmit(history);
+            const history = await this.getSessionHistory();
+            history.push({
+              role: 'function',
+              functionName: this.#currentFunctionInstructions.name,
+              content: JSON.stringify(functionResponse),
+              finished: true,
+              timestamp: Date.now(),
+            });
+
+            this.onMessageSubmit(history);
+          }
+
+          this.#currentFunctionInstructions = { name: '', arguments: '' };
         }
-
-        this.#currentFunctionInstructions = { name: '', arguments: '' };
       }
+    } catch (error) {
+      await this.abortEventsReceiving();
+      this.updateState({
+        error: new GeneralError(),
+        receivingInProgress: false,
+      });
     }
   }
 
