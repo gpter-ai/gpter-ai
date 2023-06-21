@@ -265,7 +265,10 @@ export class ChatService {
             this.onMessageSubmit(history);
           }
 
-          this.#currentFunctionInstructions = { name: '', arguments: '' };
+          this.#currentFunctionInstructions = {
+            name: '',
+            arguments: '',
+          };
         }
       }
     } catch (error) {
@@ -274,6 +277,10 @@ export class ChatService {
         error: new GeneralError(),
         receivingInProgress: false,
       });
+      this.#currentFunctionInstructions = {
+        name: '',
+        arguments: '',
+      };
     }
   }
 
@@ -297,6 +304,7 @@ export class ChatService {
         this.updateState({ error });
       }
     } finally {
+      // @todo - receiving in progress flickers if GPT got a function to call. find a way to fix it
       this.updateState({
         receivingInProgress: false,
         lastMessage: this.#state.activeMessage
