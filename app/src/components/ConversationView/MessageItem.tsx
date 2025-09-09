@@ -61,16 +61,18 @@ interface Props {
 export const MessageItem: React.FC<Props> = ({ message }) => {
   const { role, content } = message;
 
-  const roleToHeader = {
+  const roleToHeader: Record<ChatGptRole, string> = {
     user: 'You',
     assistant: 'Assistant',
     system: 'Prompt',
+    function: 'Assistant',
   };
 
   const roleToColor: Record<ChatGptRole, BoxProps.Color> = {
     user: 'inherit',
     assistant: 'text-status-info',
     system: 'text-status-success',
+    function: 'text-status-info',
   };
 
   return (
